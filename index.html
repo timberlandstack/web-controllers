@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <!--@test-->
+    <div data-controller="app">
+     <x-init></x-init> 
+
+      <!-- this should be selected from app context -->
+      <button data-ref="btn" data-on="(click): inc, something; (mouseover): inc">Inc</button>
+      <div>
+          <!-- this should be selected from app context -->
+          <button data-ref="btn" data-on="(click): something">Text</button>
+      </div>
+  
+      <div data-controller="inner">
+          <x-init></x-init>
+
+          <span id="count">0</span>
+  
+          <!-- this should NOT be selected from app context -->
+          <button data-ref="btn" data-on="(click): log">sdf</button>
+      </div>
+  
+      <span data-controller="reusable"><x-init></x-init></span>
+      <span data-controller="reusable"><x-init></x-init></span>
+    </div>
+    <!--@test-->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

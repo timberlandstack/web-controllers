@@ -1,0 +1,17 @@
+<div data-controller="app">
+    <!-- this should be selected from app context -->
+    <button data-ref="btn">
+        Inc
+    </button>
+    <div>
+        <!-- this should be selected from app context -->
+        <button data-ref="btn">Text</button>
+    </div>
+
+    <div data-controller="inner">
+        <span id="count">0</span>
+
+        <!-- this should NOT be selected from app context -->
+        <button data-ref="btn">sdf</button>
+    </div>
+</div>
