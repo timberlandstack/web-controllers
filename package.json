@@ -1,6 +1,6 @@
 {
 	"name": "@timberland/web-controllers",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"type": "module",
 	"license": "MIT",
 	"main": "src/main.js",
@@ -11,7 +11,7 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/timberlandstack/web-controllers.git"
-  	},
+	},
 	"description": "Lightweight alternative to jQuery and stimulus",
 	"scripts": {
 		"dev": "vite",

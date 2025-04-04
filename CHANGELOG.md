@@ -1,5 +1,11 @@
 # @timberland/web-controllers
 
+## 0.0.7
+
+### Patch Changes
+
+- 2a57114: First release
+
 ## 0.0.6
 
 ### Patch Changes
