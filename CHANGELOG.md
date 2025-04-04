@@ -1,5 +1,11 @@
 # @timberland/web-controllers
 
+## 0.0.6
+
+### Patch Changes
+
+- 1f5bad0: Hopefully the last test change
+
 ## 0.0.5
 
 ### Patch Changes
