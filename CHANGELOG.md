@@ -1,5 +1,11 @@
 # @timberland/web-controllers
 
+## 0.0.4
+
+### Patch Changes
+
+- 2b67b04: Another test release. Hopefully with the correct config this time
+
 ## 0.0.3
 
 ### Patch Changes
