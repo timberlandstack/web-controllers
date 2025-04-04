@@ -1,5 +1,11 @@
 # @timberland/web-controllers
 
+## 0.0.3
+
+### Patch Changes
+
+- 19f32cb: New test release: testing github actions
+
 ## 0.0.2
 
 ### Patch Changes
