@@ -13,7 +13,7 @@
 		"lint": "biome lint",
 		"cs": "changeset",
 		"version": "changeset version",
-		"publish": "changeset publish"
+		"release": "changeset publish"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
