@@ -1,4 +1,4 @@
-import _App from "../src/main.js";
+import _App from "../src/index.js";
 import { setDocument } from "./utils/lib.js";
 
 const App = new _App();

@@ -1,4 +1,4 @@
-import { Context } from "../src/main";
+import { Context } from "../src";
 import { setDocument } from "./utils/lib";
 
 const partialName = "context";

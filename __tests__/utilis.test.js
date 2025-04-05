@@ -1,4 +1,4 @@
-import { getEventsMap, resolveProperty } from "../src/main";
+import { getEventsMap, resolveProperty } from "../src";
 
 describe("App utils", () => {
   describe("getEventsMap", () => {
