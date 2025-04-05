@@ -1,5 +1,11 @@
 # @timberland/web-controllers
 
+## 0.0.8
+
+### Patch Changes
+
+- 7f6f691: Minified scripts will now be available for CDN usage
+
 ## 0.0.7
 
 ### Patch Changes
