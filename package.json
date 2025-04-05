@@ -20,7 +20,9 @@
     "lint": "biome lint",
     "cs": "changeset",
     "version": "changeset version",
-    "release": "changeset publish"
+    "version:test": "changeset version --snapshot charmander",
+    "release": "changeset publish",
+    "release:test": "changeset publish --no-git-tag --tag charmander"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
