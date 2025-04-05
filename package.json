@@ -1,42 +1,37 @@
 {
-	"name": "@timberland/web-controllers",
-	"version": "0.0.7",
-	"type": "module",
-	"license": "MIT",
-	"main": "src/main.js",
-	"author": "Álvaro Palma Mancheño",
-	"keywords": [
-		"web components"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/timberlandstack/web-controllers.git"
-	},
-	"description": "Lightweight alternative to jQuery and stimulus",
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview",
-		"test": "vitest",
-		"fmt": "biome format --write",
-		"lint": "biome lint",
-		"cs": "changeset",
-		"version": "changeset version",
-		"release": "changeset publish"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"jsdom": "^26.0.0",
-		"vite": "^6.2.0",
-		"vitest": "^3.0.9",
-		"@changesets/cli": "^2.28.1"
-	},
-	"files": [
-		"src/",
-		"README.md"
-	],
-	"publishConfig": {
-		"access": "public"
-	},
-	"packageManager": "pnpm@9.0.6+sha1.648f6014eb363abb36618f2ba59282a9eeb3e879"
+  "name": "@timberland/web-controllers",
+  "version": "0.0.7",
+  "type": "module",
+  "license": "MIT",
+  "main": "src/main.js",
+  "author": "Álvaro Palma Mancheño",
+  "keywords": ["web components"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timberlandstack/web-controllers.git"
+  },
+  "description": "Lightweight alternative to jQuery and stimulus",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "fmt": "biome format --write",
+    "lint": "biome lint",
+    "cs": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "jsdom": "^26.0.0",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.9",
+    "@changesets/cli": "^2.28.1"
+  },
+  "files": ["src/", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@9.0.6+sha1.648f6014eb363abb36618f2ba59282a9eeb3e879"
 }
