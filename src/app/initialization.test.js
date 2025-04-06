@@ -1,11 +1,12 @@
-import _App from "../src";
-import { setDocument } from "./utils/lib";
+import { App as _App } from ".";
 
 const App = new _App();
-const partialName = "initialization";
+const partial = /*html*/ `
+<div data-controller="app"></div>
+`;
 
 describe("component registration", () => {
-  setDocument(partialName);
+  document.body.innerHTML = partial;
 
   describe("app#component method", () => {
     it("should register the component in the components property without triggering the callback", () => {

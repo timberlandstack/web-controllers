@@ -5,9 +5,7 @@
   "license": "MIT",
   "main": "src/index.js",
   "author": "Álvaro Palma Mancheño",
-  "keywords": [
-    "web components"
-  ],
+  "keywords": ["web components"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/timberlandstack/web-controllers.git"
@@ -35,11 +33,7 @@
     "vite": "^6.2.0",
     "vitest": "^3.0.9"
   },
-  "files": [
-    "src/",
-    "README.md",
-    "dist/"
-  ],
+  "files": ["src/", "README.md", "dist/", "!src/__tests__/", "!**/*.test.js"],
   "publishConfig": {
     "access": "public"
   },

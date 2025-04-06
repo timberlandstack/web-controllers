@@ -1,10 +1,27 @@
-import { Context } from "../src";
-import { setDocument } from "./utils/lib";
+import { Context } from ".";
 
-const partialName = "context";
+const partial = /*html*/ `
+<div data-controller="app">
+    <!-- this should be selected from app context -->
+    <button data-ref="btn">
+        Inc
+    </button>
+    <div>
+        <!-- this should be selected from app context -->
+        <button data-ref="btn">Text</button>
+    </div>
+
+    <div data-controller="inner">
+        <span id="count">0</span>
+
+        <!-- this should NOT be selected from app context -->
+        <button data-ref="btn">sdf</button>
+    </div>
+</div>
+`;
 
 describe("context utilities", () => {
-  setDocument(partialName);
+  document.body.innerHTML = partial;
   const appRoot = document.querySelector("[data-controller=app]");
 
   describe("getQueryString method", () => {
@@ -37,7 +54,7 @@ describe("context utilities", () => {
   });
 
   describe("refs proxy", () => {
-    setDocument(partialName);
+    document.body.innerHTML = partial;
     const appRoot = document.querySelector("[data-controller=app]");
 
     it("should select elements with data-ref attribute inside component scope", () => {
@@ -57,7 +74,7 @@ describe("context utilities", () => {
     });
 
     it("should automatically invalidate the references if all or one is accessed after the other", () => {
-      setDocument(partialName);
+      document.body.innerHTML = partial;
       const appRoot = document.querySelector("[data-controller=app]");
 
       const { $ } = new Context(appRoot);
@@ -68,7 +85,7 @@ describe("context utilities", () => {
     });
 
     it("should accept an object with attributes for hydrating ad-hoc", () => {
-      setDocument(partialName);
+      document.body.innerHTML = partial;
       const appRoot = document.querySelector("[data-controller=app]");
 
       const { $, $select } = new Context(appRoot);
@@ -78,13 +95,15 @@ describe("context utilities", () => {
         .all({
           onclick: () => count++,
           "data-hello": "world",
-          class: "test-class",
+          classList: "test-class",
+          textContent: (el) => `I'm a ${el.tagName}`,
         })
-        .forEach((btn, i) => {
-          expect(count).toBe(i);
+        .forEach((btn, index) => {
+          expect(count).toBe(index);
           btn.click();
           expect(btn.dataset.hello).toBe("world");
           expect(btn.classList.contains("test-class")).toBe(true);
+          expect(btn.textContent).toBe(`I'm a BUTTON`);
         });
 
       const innerController = $select("[data-controller=inner]");
