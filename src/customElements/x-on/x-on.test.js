@@ -6,16 +6,16 @@ const partial = /*html*/ `
 <div data-controller="app">
     <h1 data-ref="count">0</h1>
     <button data-test-id="app-button">
-      <x-on click="increment" mouseover="increment"></x-on>
+      <x-on :click="increment" :mouseover="increment"></x-on>
       Click me!
     </button>
 
-    <x-on target="input" input="changeName"></x-on>
+    <x-on target="input" :input="changeName"></x-on>
     <input type="text" data-ref="input" />
 
     <div data-controller="nested">
         <button data-test-id="nested-button">
-          <x-on click="increment, runCb, runOnce" mouseover="increment"></x-on>
+          <x-on :click="increment, runCb, runOnce" :mouseover="increment"></x-on>
           Click me too!
         </button>
     </div>
@@ -53,9 +53,9 @@ App.controller("nested", ({ $scope }) => {
   return { increment, runCb, runOnce };
 });
 
-App.init([XOnFactory]);
+App.use(XOnFactory);
 
-describe("Attaching events listeners", () => {
+describe("Attaching event listeners", () => {
   const button = document.querySelector("[data-test-id='app-button']");
   const count = document.querySelector('[data-ref="count"]');
 

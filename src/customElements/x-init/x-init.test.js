@@ -53,7 +53,7 @@ app.controller("btn", ({ rootElement }) => {
   rootElement.dataset.text = "I'm a button";
 });
 
-app.init([XInitFactory]);
+app.use(XInitFactory);
 
 const appRoot = document.querySelector("[data-controller=app]");
 
@@ -77,7 +77,7 @@ describe("XInit custom element", () => {
       appRoot.querySelector("[data-test-id='1']").remove();
       appRoot.querySelector("[data-test-id='2']").remove();
 
-      expect(deletedItems.length).toBe(2)
+      expect(deletedItems.length).toBe(2);
       deletedItems.forEach((item, index) => {
         expect(item.dataset.testId).toBe(`${index + 1}`);
       });

@@ -1,15 +1,11 @@
 # Timberland - Web Controllers
-The `web-controllers` package aims at being a more modern, lightweight and ergonomic approach to alternatives like [jQuery](https://github.com/jquery/jquery) and [Stimulus](https://github.com/hotwired/stimulus), projects that have heavily inspired the API of this project.
+The `web-controllers` package aims at being a more modern, lightweight and modular approach to alternatives like [jQuery](https://github.com/jquery/jquery) and [Stimulus](https://github.com/hotwired/stimulus).
 
 Some key features:
-- Automatically add event listeners as declared in the HTML
 - Easily select and hydrate elements (`Ref`s) inside and scoped to the controller
-- Add lifecycle methods for elements entering and exiting [TODO] the DOM without the need for any `MutationObserver`
-- Web Components (more specifically, `CustomElements` API) for initializing the controllers, giving you more flexibility over how and when these are initialized
-- [TODO] Lazy initialize the controllers for better performance and as a more declarative replacement for the `IntersectionObserver` (which is used behind scenes)
-- [TODO] Ability to extend the `Context` class for adding your own custom helpers
-- [TODO] Ability to add "directives" for performing adding custom behaviours when hydrating `Ref`s
-- Very small bundle size: **1.4kb** minified + gzipped
+- Optional Utility Web Components (more specifically, `CustomElements` API) for having a declarative experience in your HTML
+- Lazy initialize the controllers for better performance and as a more declarative replacement for the `IntersectionObserver` (which is used behind scenes)
+- Very small bundle size: **1.5kb** minified + gzipped, but can be stripped down if you don't want to use the built-in custom elements.
 > [!NOTE]
 > The API is still under active development. We can still cut down some code to compensate for new upcoming features, so this shouldn't change much.
 
@@ -34,14 +30,14 @@ import { App, Context } from '@timberland/web-controllers'
 ```html
 <!-- ESM -->
 <script type="module">
-    import { App, Context } from "https://unpkg.com/@timberland/web-controllers/dist/web-controllers.esm.js"
+    import { App } from "https://unpkg.com/@timberland/web-controllers/dist/web-controllers.esm.js"
 </script>
 
 <!-- IIFE -->
 <script src="https://unpkg.com/@timberland/web-controllers/dist/web-controllers.iife.js"></script>
 <script>
-    // Stored under the WebControllers global name so we don't pollute the global scope
-    const { App, Context } = window.WebControllers 
+    // Stored under the WebControllers name so we don't pollute the global scope
+    const { App } = window.WebControllers 
 </script>
 ```
 > [!CAUTION] 
@@ -49,10 +45,9 @@ import { App, Context } from '@timberland/web-controllers'
 
 
 ## Example usage
+### Using a more imperative approach
 ```html
 <div data-controller="app">
-    <x-init></x-init>
-
     <p data-ref="message">No one said hi...</p>
     <button data-ref="btn">
         Click me!
@@ -74,13 +69,47 @@ app.init()
 ```
 Brief explanation:
 1. We are creating an instance of the [`App`](#new-appoptions) class
-2. We are registering a [controller](#appcontrollercontrollername-callback), in which:
-    1. We are receiving a [`Context`](#new-contextrootelement) and using one of its helpers to select and manipulate an existing HTML Element (with the [`$`](#context-1) proxy)
-    2. We are returning a hydration scope with a method that will be attached to the element with the [`data-on`](#usage-with-data-on-attribute) custom attribute
-3. Finally, we are [initializing the `App` instance](#appinit) so the controller can be initialized
+2. We are registering a [controller](#appcontrollercontrollername-callback), in which we are receiving a [`Context`](#new-contextrootelement) and using one of its helpers to select and manipulate an existing HTML Element (with the [`$`](#context-1) proxy)
+3. Finally, we are calling the `init` method of the `App` instance so the controller can be initialized as soon as the DOM is ready
 
-Let's dive deeper!
+<br/>
 
+### Using Utility Web Components
+```html
+<div data-controller="app">
+    <p data-ref="message">No one said hi...</p>
+    <button>
+        <x-on :click="sayHi"></x-on>
+        Click me!
+    </button>
+</div>
+```
+```javascript
+import { App, XOnFactory } from "@timberland/web-controllers"
+const app = new App()
+
+app.controller('app', (ctx) => {
+    const { $ } = ctx
+
+    return {
+        sayHi: () => $.message.one({ textContent: 'Hi there!' }) 
+    }
+})
+
+app.use(XOnFactory)
+```
+
+Like in the previous example, we are registering a controller that will affect the corresponding HTML Element with the `data-controller` attribute.
+However, there are a couple of things to notice:
+1. We are returning an object from the controller. This object will be the scope in which the custom element will look for the specified methods. Notice that there is no evaluation whatsoever here, its just mere string lookup in the returned object.
+2. The controller will be initialized by the custom element. Meaning, when the `x-on` custom element enters its connected phase, it will:
+    1. Find it closest `data-controller` element
+    2. Check if it has been initialized
+    3. If it hasn't been initialized, it will initialize it and then perform its logic (adding event listeners to its parent element or specified target)
+    4. Once it has accomplished its mission, it will be automatically removed, leaving you with a clean, custom-elements-free DOM
+
+Does it sound interesting? Let's dive deeper! (Or, in case you are wondering "*what the hell...*", jump straight ahead to know more about [Utility Web Components](#utility-web-components)) 
+<br/>
 
 ## Main concepts
 ### Controllers
@@ -93,13 +122,73 @@ As opposed to jQuery's elements or Stimulus' inheritance model, we create a cont
 `Ref`s are our proporsal for mitigating the pain of `querySelect`ing by hand. Refs can share the same name, and we still have the power to control if we want to affect just one or all of them, as well as performing some nice manipulation by providing a hydration object.
 ### Special attributes
 
+### Utility Web Components
+#### Traditional Web Components approach
+So here comes the weird part. We believe in the potential that web components have for the web, but it comes with a few quirks. From our point of view, the most relevant ones are:
+1. They differ *a lot* from traditional frameworks components. Trying to compare them to, for instance, React components, will leave you pretty hearth-broken.
+2. They exist in the DOM, most of the times creating unnecessary nesting and sacrificing semantics. Typically, you will see a `button` component as `<custom-button><button>I'm a button</button></custom-button>`, just so you can perform some declarative logic on that button. It goes without saying that you couldn't use them, for instance, for list items, or anywhere where semantics are important. It *could* be possible to extend existing elements and their semantics, but Safari [won't help us](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/is).
+
+They do, however, allow us to achieve pretty great things. For instance, with the aforementioned `custom-button` example: You don't need to know if the element is present on the DOM or not, neither if it will be present after the script has been executed. It's kind of CSS but for JavaScript: you define the logic once and the browser will take over from there.
+
+This means that we can achieve a truly declarative approach to JavaScript without the need for any kind of workaounds, like using the `MutationObserver` API. When the browser detects a `custom-button` tag, it will perform whatever you want it to perform and will do the same for when it exits the DOM (similar to `mounted` and `unmounted` lifecycles of other frameworks).
+
+#### Introducing Utility Web Components (UWC)
+With the concept of UWC, we aim at achieving a middle ground between Web-Components-first libraries (like [Lit](https://github.com/lit/lit)) and attribute-first libraries (like [Alpine](https://github.com/alpinejs/alpine) or [Stimulus](https://github.com/hotwired/stimulus)).
+
+We won't deep any further in options like Lit, since their target is mainly Client Side Rendered web components. If we were to compare this library, it would be better pictured with the examples of Alpine and Stimulus, since we also believe in the power of "traditional" Server Side Rendered apps. Let's have a few words about it.
+
+##### How they success at being declarative matters
+They both use an attribute-first approach, meaning that you define some attributes in your HTML and they will take care of the rest. Elements can exit and enter the DOM without you having to worry about lifecycle events or manually hydrating them. You just declare what you want your piece of HTML do, and they will handle it for you.
+
+This is nice, but both of them come with a few tradeoffs:
+- Alpine requires you to use their mechanisms for manipulating the DOM. Meaning, if you want to conditionally render an element or to have an `@click` action to take place, you cannot manually remove or add an element from the DOM. Your DOM becomes then a strict representation of the state of your application. This is totally fine, but may seem a bit of an overkill for apps where your initial state has been already server-side-rendered.
+- Stimulus follows more of a [HATEOAS](https://htmx.org/essays/hateoas/) approach, meaning that the state of your application is a direct reflection of your DOM. You can freely manipulate your DOM however you like, and Stimulus will make sure to properly handle the logic for everything to work just as you declare it. It does, however, use a `MutationObserver` under the hood. Which is fine, but we think we can achieve better performance and smaller bundle size with custom elements, which are just another mechanism that the web platform exposes to us.
+
+##### Our approach
+By using web components, we can make sure the browser handles everything in the way it's supposed to. For initializing controllers (even lazily when they enter the viewport!), attaching event listeners or performing some logic when the target element is added or removed from the DOM, we can just nest custom elements instead of adding attributes. Picture this:
+
+
+```html
+<!-- An example snippet from Alpine -->
+<!-- Supping we are declaring a component in a .js file -->
+<div x-data>
+    <button x-on:click="toggleMessage()">
+        Click me!
+    </button>
+    <template 
+        x-if="showMessage == true"
+        x-init="onMessageShown()"
+        x-data="{ destroy() { console.log('message destroyed') } }">
+
+        <p>I'm a message</p>
+    </template>
+</div>
+
+<!-- An example snippet using timberland web controllers -->
+ <div data-controller="message">
+    <button>
+        <x-on :click="toggleMessage()"></x-on>
+        Click me!
+    </button>
+
+    <!-- We must manipuate it from the controller, it's not reactive -->
+    <template>
+        <p>
+            <x-init connected="onMessageShown" disconnected="onMessageDisconnected">
+            I'm a message
+        </p>
+    </template>
+ </div>
+```
+
+
+--- 
 We stick to web standards, so our primary source for performing special computations based on declarative HTML is... well, you guessed it, web standards. All special attributes are mere dataset attributes. There are only 3:
 - `data-controller`: Identifier for registered controllers. When the `x-init` custom elements enters the DOM (or it's first registered), it will look up to its closest element with a data-controller attribute to initialize it. This means that as long as you nest an `x-init` tag inside your controller, you can manipulate the HTML however you want and still get the hydration niceties.
-- [`data-on`](#usage-with-data-on-attribute): When initializing the controller, we will check if a scope has been provided, by either using the [`Context#$scope`](#contextscopehydrationscope) method or by returning an object from the [controller](#appcontrollercontrollername-callback). It will then automatically add the corresponding event listeners to the element.
 - [`data-ref`](#new-ref): Special selector for selecting `Ref`s.
 
 > [!NOTE]
-> In the future, we might open the door for new special attributes, and even allowing you to bring your own. Stay tuned ☺️
+> In the future, we might open the door for new utility custom elements. Stay tuned ☺️
 
 
 ## Reference (API/Usage)

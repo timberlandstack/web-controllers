@@ -12,7 +12,7 @@ describe("App init method", () => {
 
   it("should initialize the registered controllers", () => {
     App.controller("app", ({ $scope, rootElement }) => {
-      window.didRun = window.didRun ? false : true;
+      window.didRun = !window.didRun;
       $scope({ test: true });
 
       expect(rootElement).toBeInstanceOf(HTMLElement);
@@ -34,7 +34,7 @@ describe("App init method", () => {
       };
 
     expect(customElementInitialized).toBe(false);
-    App.init([testCustomElementFacotry]);
+    App.use(testCustomElementFacotry);
 
     expect(customElementInitialized).toBe(true);
     expect(customElements.get("x-test")).toBeDefined();

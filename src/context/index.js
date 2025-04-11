@@ -29,7 +29,7 @@ export class Context {
         console.error("Cannot manually set properties on the $ object");
         return false;
       },
-    },
+    }
   );
 
   $select = (selector, options = { invalidate: false, all: false }) => {
@@ -41,7 +41,7 @@ export class Context {
     const foundElements = this.rootElement.querySelectorAll(completeSelector);
     this.elementsCache.set(
       completeSelector,
-      options.all ? [...foundElements] : foundElements[0],
+      options.all ? [...foundElements] : foundElements[0]
     );
     return this.elementsCache.get(completeSelector);
   };
@@ -49,7 +49,9 @@ export class Context {
   $getQueryString = (selector) => {
     let queryString = selector;
     if (this.#nestedComponent) {
-      queryString += `:not( [data-controller="${this.#nestedComponent.dataset?.controller}"] * )`;
+      queryString += `:not( [data-controller="${
+        this.#nestedComponent.dataset?.controller
+      }"] * )`;
     }
     return queryString;
   };

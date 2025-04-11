@@ -51,13 +51,13 @@ export class Ref {
         ? element.addEventListener(
             attribute.slice(2),
             attributes[attribute],
-            attributes[attribute]?.options ?? {},
+            attributes[attribute]?.options ?? {}
           )
         : typeof attributes[attribute] === "function"
-          ? (element[attribute] = attributes[attribute](element))
-          : attribute in element
-            ? (element[attribute] = attributes[attribute])
-            : element.setAttribute(attribute, attributes[attribute]);
+        ? (element[attribute] = attributes[attribute](element))
+        : attribute in element
+        ? (element[attribute] = attributes[attribute])
+        : element.setAttribute(attribute, attributes[attribute]);
     }
   }
 }
