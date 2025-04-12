@@ -24,7 +24,7 @@ pnpm add @timberland/web-controllers
 ```
 
 ```javascript
-import { App, Context } from '@timberland/web-controllers'
+import { App } from '@timberland/web-controllers'
 ```
 ### With a CDN
 ```html
@@ -121,6 +121,7 @@ As opposed to jQuery's elements or Stimulus' inheritance model, we create a cont
 ### Refs
 `Ref`s are our proporsal for mitigating the pain of `querySelect`ing by hand. Refs can share the same name, and we still have the power to control if we want to affect just one or all of them, as well as performing some nice manipulation by providing a hydration object.
 ### Special attributes
+TODO
 
 ### Utility Web Components
 #### Traditional Web Components approach
@@ -130,14 +131,14 @@ So here comes the weird part. We believe in the potential that web components ha
 
 They do, however, allow us to achieve pretty great things. For instance, with the aforementioned `custom-button` example: You don't need to know if the element is present on the DOM or not, neither if it will be present after the script has been executed. It's kind of CSS but for JavaScript: you define the logic once and the browser will take over from there.
 
-This means that we can achieve a truly declarative approach to JavaScript without the need for any kind of workaounds, like using the `MutationObserver` API. When the browser detects a `custom-button` tag, it will perform whatever you want it to perform and will do the same for when it exits the DOM (similar to `mounted` and `unmounted` lifecycles of other frameworks).
+This means that we can achieve a truly declarative approach in JavaScript without the need for any kind of workaounds, like using the `MutationObserver` API. When the browser detects a `custom-button` tag, it will perform whatever you want it to perform and will do the same for when it exits the DOM (similar to `mounted` and `unmounted` lifecycles of other frameworks).
 
 #### Introducing Utility Web Components (UWC)
-With the concept of UWC, we aim at achieving a middle ground between Web-Components-first libraries (like [Lit](https://github.com/lit/lit)) and attribute-first libraries (like [Alpine](https://github.com/alpinejs/alpine) or [Stimulus](https://github.com/hotwired/stimulus)).
+With the concept of UWC, we aim at meeting a middle ground between Web-Components-first libraries (like [Lit](https://github.com/lit/lit)) and attribute-first libraries (like [Alpine](https://github.com/alpinejs/alpine) or [Stimulus](https://github.com/hotwired/stimulus)).
 
-We won't deep any further in options like Lit, since their target is mainly Client Side Rendered web components. If we were to compare this library, it would be better pictured with the examples of Alpine and Stimulus, since we also believe in the power of "traditional" Server Side Rendered apps. Let's have a few words about it.
+We won't dive any further into alternatives like Lit, since their target is mainly Client Side Rendered web components. If we were to compare this library, it would be better to do do with Alpine and Stimulus, since we also believe in the power of "traditional" Server Side Rendered apps. Let's have a few words about it.
 
-##### How they success at being declarative matters
+##### How they success at being declarative
 They both use an attribute-first approach, meaning that you define some attributes in your HTML and they will take care of the rest. Elements can exit and enter the DOM without you having to worry about lifecycle events or manually hydrating them. You just declare what you want your piece of HTML do, and they will handle it for you.
 
 This is nice, but both of them come with a few tradeoffs:
@@ -167,12 +168,12 @@ By using web components, we can make sure the browser handles everything in the 
 <!-- An example snippet using timberland web controllers -->
  <div data-controller="message">
     <button>
-        <x-on :click="toggleMessage()"></x-on>
+        <x-on :click="toggleMessage"></x-on>
         Click me!
     </button>
 
-    <!-- We must manipuate it from the controller, it's not reactive -->
-    <template>
+    <!-- We must manually attach or remove it from the DOM, it's not reactive. We add a data-ref to make it easier to manipulate -->
+    <template data-ref="messageTemplate">
         <p>
             <x-init connected="onMessageShown" disconnected="onMessageDisconnected">
             I'm a message
