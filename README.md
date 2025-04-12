@@ -156,12 +156,14 @@ By using web components, we can make sure the browser handles everything in the 
     <button x-on:click="toggleMessage()">
         Click me!
     </button>
-    <template 
-        x-if="showMessage == true"
-        x-init="onMessageShown()"
-        x-data="{ destroy() { console.log('message destroyed') } }">
+    <template x-if="showMessage == true">
 
-        <p>I'm a message</p>
+        <p
+          x-init="onMessageShown()"
+          x-data="{ destroy() { console.log('message destroyed') } }">
+
+          I'm a message
+        </p>
     </template>
 </div>
 
