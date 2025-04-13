@@ -10,9 +10,9 @@ Some key features:
 > The API is still under active development. We can still cut down some code to compensate for new upcoming features, so this shouldn't change much.
 
 ## Project status
-This package is pretty new and we don't expect a crazy wild adoption. The API and the implementation are fairly simple, but please be aware that bugs might appear. If you find anything strange, please let us know by opening an issue.
+This package is pretty new, pretty niche and hence I don't expect a crazy wild adoption. I will, however, assume the compromise of maintaining and developing this, mainly because I want this to exist. I *need* this to exist. We must try to enrich the JavaScript ecosystem outside of the frameworks land and aim at solutions that integrate well with traditional technologies. Hopefully, to prevent us from having to re-write a whole frontend in <your_famework_here> just because jQuery is not cool anymore.
 
-The API is almost stable, so no crazy changes should be introduced. However, we are still defining and polishing it, as we would like the library to be fully backwards compatible across versions. The design we implement today must be the design we stick to during the whole life of the project.
+The API is almost stable, but I cannot guarantee anything until I (or we, if you reader decide to join me) hit a v1. There is a lot of testing to be done and so far 0 usage in production applications, so here be dragons. If you encounter anything unexpected, please feel free to open an issue!
 
 ## Index
 
@@ -108,7 +108,7 @@ However, there are a couple of things to notice:
     3. If it hasn't been initialized, it will initialize it and then perform its logic (adding event listeners to its parent element or specified target)
     4. Once it has accomplished its mission, it will be automatically removed, leaving you with a clean, custom-elements-free DOM
 
-Does it sound interesting? Let's dive deeper! (Or, in case you are wondering "*what the hell...*", jump straight ahead to know more about [Utility Web Components](#utility-web-components)) 
+Let's dive deeper! (Or, in case you are wondering "*what the hell...*", jump straight ahead to know more about [Utility Web Components](#utility-web-components)) 
 <br/>
 
 ## Main concepts
@@ -116,42 +116,48 @@ Does it sound interesting? Let's dive deeper! (Or, in case you are wondering "*w
 These are the preferred way of hydrating your application. The idea is fairly simple: you register a controller name together with an associated callback that will run once your controller is initialized. Said callback will have access to its respective `Context` instance.
 
 ### Context
-As opposed to jQuery's elements or Stimulus' inheritance model, we create a context that holds all the utils for making our lives easier and pass it down during the controller's initialization phase. Here we can manipulate the root element, perform queries scoped to the controller itself, access references (or `Ref`s) and exposing methods available for event handling.
+We create a context that holds all the utils for making our lives easier and pass it down during the controller's initialization phase. Here we can manipulate the root element, perform queries scoped to the controller itself, access references (or `Ref`s) and exposing methods available for event handling.
 
 ### Refs
-`Ref`s are our proporsal for mitigating the pain of `querySelect`ing by hand. Refs can share the same name, and we still have the power to control if we want to affect just one or all of them, as well as performing some nice manipulation by providing a hydration object.
+`Ref`s are my proporsal for mitigating the pain of `querySelect`ing by hand. Refs can share the same name, and we still have the power to control if we want to affect just one or all of them, as well as performing some nice manipulation by providing a hydration object.
+
 ### Special attributes
-TODO
+I mostly like to stick to web standards, so all "special" attributes on existing HTML elements are mere dataset attributes. There are only 3:
+- `data-controller`: Identifier for registered controllers.
+- `data-ref`: Special selector for selecting `Ref`s.
+- `data-scope`: Used to flatten a nested scope when referencing the hydration context in the HTML.
+
+The approach is a little bit different, however, on the build-in web components. More on that in their specific section.
 
 ### Utility Web Components
 #### Traditional Web Components approach
-So here comes the weird part. We believe in the potential that web components have for the web, but it comes with a few quirks. From our point of view, the most relevant ones are:
-1. They differ *a lot* from traditional frameworks components. Trying to compare them to, for instance, React components, will leave you pretty hearth-broken.
-2. They exist in the DOM, most of the times creating unnecessary nesting and sacrificing semantics. Typically, you will see a `button` component as `<custom-button><button>I'm a button</button></custom-button>`, just so you can perform some declarative logic on that button. It goes without saying that you couldn't use them, for instance, for list items, or anywhere where semantics are important. It *could* be possible to extend existing elements and their semantics, but Safari [won't help us](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/is).
+So here comes the weird part. I believe in the potential that web components have for the web, but it comes with a few quirks. From my point of view, the most relevant ones are:
+1. They differ *a lot* from traditional frameworks components. Trying to compare them to, for instance, React components, will leave you pretty heart-broken. Even though they are components in the sense that they can allow you to abstract and reuse logic and pieces of HTML, they are regular DOM elements with almost the same limitations traditional frameworks aimt at mitigating.
+2. They exist in the DOM, most of the times creating unnecessary nesting and sacrificing semantics. Typically, you will see a `button` component as `<custom-button><button>I'm a button</button></custom-button>`, just so you can perform some declarative logic on that button. It goes without saying that you couldn't use them, for instance, for list items, or anywhere where semantics are important. It *is* possible to extend existing elements and their semantics, but Safari [doens't put it easy](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/is).
+3. Because of all the reasons above, we can definitely argue that web components don't come "for free". They exist in the runtime, so they do take space in your DOM and you application's memory. While this can be useful in some cases, it's often more of a burden if you try to stick to the components model you are used to when utilizing frameworks like React.
 
-They do, however, allow us to achieve pretty great things. For instance, with the aforementioned `custom-button` example: You don't need to know if the element is present on the DOM or not, neither if it will be present after the script has been executed. It's kind of CSS but for JavaScript: you define the logic once and the browser will take over from there.
+They do, however, allow us to achieve pretty great things. For instance, with the aforementioned `custom-button` example: You don't need to know if the element is present on the DOM or not before the script has been executed. You don't need to wait for the DOM content to be fully loaded It's kind of CSS but for JavaScript: you define the logic once and the browser will take care once it encounters your selector.
 
-This means that we can achieve a truly declarative approach in JavaScript without the need for any kind of workaounds, like using the `MutationObserver` API. When the browser detects a `custom-button` tag, it will perform whatever you want it to perform and will do the same for when it exits the DOM (similar to `mounted` and `unmounted` lifecycles of other frameworks).
+This means that we can achieve a truly declarative approach in JavaScript without the need for any kind of workaounds, like using the `MutationObserver` API. When the browser detects a `custom-button` tag, it will perform whatever you want it to when its connected or disconnected from the DOM (similar to `mounted` and `unmounted` lifecycles of other frameworks).
 
-#### Introducing Utility Web Components (UWC)
-With the concept of UWC, we aim at meeting a middle ground between Web-Components-first libraries (like [Lit](https://github.com/lit/lit)) and attribute-first libraries (like [Alpine](https://github.com/alpinejs/alpine) or [Stimulus](https://github.com/hotwired/stimulus)).
+#### Introducing Utility Web Components (UWCs)
+With the concept of UWCs, I aim at meeting a middle ground between Web-Components-first libraries (like [Lit](https://github.com/lit/lit)) and attribute-first libraries (like [Alpine](https://github.com/alpinejs/alpine) or [Stimulus](https://github.com/hotwired/stimulus)).
 
 We won't dive any further into alternatives like Lit, since their target is mainly Client Side Rendered web components. If we were to compare this library, it would be better to do do with Alpine and Stimulus, since we also believe in the power of "traditional" Server Side Rendered apps. Let's have a few words about it.
 
-##### How they success at being declarative
+##### How they succeed at being declarative
 They both use an attribute-first approach, meaning that you define some attributes in your HTML and they will take care of the rest. Elements can exit and enter the DOM without you having to worry about lifecycle events or manually hydrating them. You just declare what you want your piece of HTML do, and they will handle it for you.
 
 This is nice, but both of them come with a few tradeoffs:
 - Alpine requires you to use their mechanisms for manipulating the DOM. Meaning, if you want to conditionally render an element or to have an `@click` action to take place, you cannot manually remove or add an element from the DOM. Your DOM becomes then a strict representation of the state of your application. This is totally fine, but may seem a bit of an overkill for apps where your initial state has been already server-side-rendered.
-- Stimulus follows more of a [HATEOAS](https://htmx.org/essays/hateoas/) approach, meaning that the state of your application is a direct reflection of your DOM. You can freely manipulate your DOM however you like, and Stimulus will make sure to properly handle the logic for everything to work just as you declare it. It does, however, use a `MutationObserver` under the hood. Which is fine, but we think we can achieve better performance and smaller bundle size with custom elements, which are just another mechanism that the web platform exposes to us.
+- Stimulus (and more specifically, the Hotwire stack) follows more of a [HATEOAS](https://htmx.org/essays/hateoas/) approach, meaning that the state of your application is a direct reflection of your DOM. You can freely manipulate your DOM however you like, and Stimulus will make sure to properly handle the logic for everything to work just as you declare it. It does, however, use a `MutationObserver` under the hood. Which is fine, but we think we can achieve better performance and smaller bundle size with custom elements, which are just another mechanism that the web platform exposes to us.
 
-##### Our approach
+##### My approach
 By using web components, we can make sure the browser handles everything in the way it's supposed to. For initializing controllers (even lazily when they enter the viewport!), attaching event listeners or performing some logic when the target element is added or removed from the DOM, we can just nest custom elements instead of adding attributes. Picture this:
-
 
 ```html
 <!-- An example snippet from Alpine -->
-<!-- Supping we are declaring a component in a .js file -->
+<!-- Suppossing we are declaring a component in a .js file -->
 <div x-data>
     <button x-on:click="toggleMessage()">
         Click me!
@@ -184,14 +190,12 @@ By using web components, we can make sure the browser handles everything in the 
  </div>
 ```
 
+I'd argue it's not *that* different. Of course it may seem weird at first, it did when first designing and developing this API. But it's really easy to get used to it. It, of course, comes with a few tradeoffs of its own, but I strongly believe the good outweights them.
 
---- 
-We stick to web standards, so our primary source for performing special computations based on declarative HTML is... well, you guessed it, web standards. All special attributes are mere dataset attributes. There are only 3:
-- `data-controller`: Identifier for registered controllers. When the `x-init` custom elements enters the DOM (or it's first registered), it will look up to its closest element with a data-controller attribute to initialize it. This means that as long as you nest an `x-init` tag inside your controller, you can manipulate the HTML however you want and still get the hydration niceties.
-- [`data-ref`](#new-ref): Special selector for selecting `Ref`s.
+##### Does it mean we refuse to use web components in the traditional way? 
+Hell, **no**! These little UWCs are my proporsal for addressing these little things other libraries would address via attributes and observers. I still love the idea of web components, specially in form of [HTML Web Components](https://blog.jim-nielsen.com/2023/html-web-components/). They are an amazing way of super-charging traditional HTML elements, and I have a few ideas of my own about things I can build using the Timberland Stack together with web components. Stay tuned for more 🥸.
 
-> [!NOTE]
-> In the future, we might open the door for new utility custom elements. Stay tuned ☺️
+Thanks a lot for reading and please do feel free to share with me any idea about this. Let's now come back to the documentation.
 
 
 ## Reference (API/Usage)
