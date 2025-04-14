@@ -3,11 +3,12 @@ import { Ref } from "../ref";
 export class Context {
   elementsCache = new Map();
   scope = null;
-  #nestedComponent = null;
+  #nestedController = null;
 
   constructor(rootElement) {
     this.rootElement = rootElement;
-    this.#nestedComponent = this.rootElement.querySelector("[data-controller]");
+    this.#nestedController =
+      this.rootElement.querySelector("[data-controller]");
   }
 
   $scope = (hydrationScope) => {
@@ -48,9 +49,9 @@ export class Context {
 
   $getQueryString = (selector) => {
     let queryString = selector;
-    if (this.#nestedComponent) {
+    if (this.#nestedController) {
       queryString += `:not( [data-controller="${
-        this.#nestedComponent.dataset?.controller
+        this.#nestedController.dataset?.controller
       }"] * )`;
     }
     return queryString;

@@ -11,7 +11,7 @@ const partial = /*html*/ `
 describe("component registration", () => {
   document.body.innerHTML = partial;
 
-  describe("app#component method", () => {
+  describe("app#controller method", () => {
     it("should register the component in the components property without triggering the callback", () => {
       let didRun = false;
       const controllerCallback = (_ctx) => {

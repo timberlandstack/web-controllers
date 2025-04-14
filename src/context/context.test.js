@@ -28,11 +28,11 @@ describe("context utilities", () => {
     it("should return the correct query string", () => {
       const appCtx = new Context(appRoot);
       expect(appCtx.$getQueryString("button")).toBe(
-        'button:not( [data-controller="inner"] * )',
+        'button:not( [data-controller="inner"] * )'
       );
 
       const innerCtx = new Context(
-        document.querySelector("[data-controller=inner]"),
+        document.querySelector("[data-controller=inner]")
       );
       expect(innerCtx.$getQueryString("button")).toBe("button");
     });

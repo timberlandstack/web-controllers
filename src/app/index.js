@@ -1,4 +1,5 @@
 import { Context } from "../context";
+import { BaseComponent } from "../customElements/base-component/base-component";
 
 export class App {
   constructor() {
@@ -9,6 +10,40 @@ export class App {
 
   controller(selector, controllerCallback) {
     this.controllers[selector] = controllerCallback;
+  }
+  _controller(selector, controllerCallback) {
+    if (customElements.get(`${selector}-controller`)) return;
+
+    customElements.define(
+      `${selector}-controller`,
+      class extends HTMLElement {
+        constructor() {
+          super();
+          this.initialized = false;
+        }
+        connectedCallback() {
+          this.init = () => {
+            if (this.initialized) return;
+            const currentContext = new Context(this);
+            const scope = controllerCallback(currentContext);
+            if (scope) {
+              currentContext.$scope(scope);
+            }
+
+            Object.assign(this, currentContext);
+            if (typeof currentContext.scope?.connected === "function") {
+              currentContext.scope?.connected?.(this);
+              currentContext.scope.connected = undefined;
+            }
+
+            this.initialized = true;
+          };
+          this.setAttribute("data-controller", selector);
+
+          if (!this.hasAttribute("lazy")) this.init();
+        }
+      }
+    );
   }
 
   init() {
