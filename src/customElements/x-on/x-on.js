@@ -7,7 +7,7 @@ export const XOnFactory = (appInstance) =>
     onConnected() {
       attachEvents(
         { customElement: this, target: this.target },
-        this.context.scope
+        this.closestController.scope
       );
       this.remove();
     }

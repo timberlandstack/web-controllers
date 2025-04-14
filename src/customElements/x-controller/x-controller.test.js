@@ -20,7 +20,7 @@ const nestedController = document.querySelector("nested-controller");
 
 describe("App#_controller method", () => {
   it('should register a custom element starting with the controller name and the word "controller"', () => {
-    app._controller("app", (ctx) => {
+    app.controller("app", (ctx) => {
       ctx.$scope({
         connected: (element) => {
           element.dataset.hello = "world";
@@ -38,7 +38,7 @@ describe("App#_controller method", () => {
   });
 
   it("should respect the lazy attribute", () => {
-    app._controller("nested", () => {
+    app.controller("nested", () => {
       return {
         nested: true,
       };

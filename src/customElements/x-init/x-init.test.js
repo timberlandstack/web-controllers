@@ -2,7 +2,7 @@ import { App } from "../..";
 import { XInitFactory } from "./x-init";
 
 const template = /*html*/ `
-<div data-controller="app">
+<app-controller>
     <x-init disconnected="onAppDestroyed"></x-init>
 
     <ul>
@@ -13,12 +13,7 @@ const template = /*html*/ `
             <x-init disconnected="onItemDestroyed"></x-init>
         </li>
     </ul>
-</div>
-`;
-const enteringController = /*html*/ `
-<button data-controller="btn">
-    <x-init></x-init>
-</button>
+</app-controller>
 `;
 const enteringElement = /*html*/ `
 <span>
@@ -32,12 +27,11 @@ const enteringVoidElement = /*html*/ `
 `;
 
 document.body.innerHTML = template;
-let appInitialized = false;
+
 let isDestroyed = false;
 const deletedItems = [];
 const app = new App();
 app.controller("app", () => {
-  appInitialized = true;
   return {
     onSpanAdded: (el) => {
       el.dataset.text = "I'm a span";
@@ -49,27 +43,15 @@ app.controller("app", () => {
     onItemDestroyed: (item) => deletedItems.push(item),
   };
 });
-app.controller("btn", ({ rootElement }) => {
+app.controller("entering", ({ rootElement }) => {
   rootElement.dataset.text = "I'm a button";
 });
 
 app.use(XInitFactory);
 
-const appRoot = document.querySelector("[data-controller=app]");
+const appRoot = document.querySelector("app-controller");
 
 describe("XInit custom element", () => {
-  it("should initialize the controller when entering the DOM after the app has been initialized", () => {
-    expect(appInitialized).toBe(true);
-
-    document.body.insertAdjacentHTML("beforeend", enteringController);
-    const btn = document.querySelector("[data-controller=btn]");
-    expect(btn.dataset.text).toBe("I'm a button");
-
-    appRoot.insertAdjacentHTML("beforeend", enteringElement);
-    const span = document.querySelector("span");
-    expect(span.dataset.text).toBe("I'm a span");
-  });
-
   describe("disconnected callback", () => {
     it("should trigger the callback provided in the attribute", () => {
       expect(isDestroyed).toBe(false);

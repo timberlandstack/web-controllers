@@ -16,7 +16,7 @@ app.controller("app", () => {
   return {};
 });
 
-app.controller("nested-controller", () => {
+app.controller("nested", () => {
   return {};
 });
 
@@ -27,33 +27,32 @@ app.controller("lazy", () => ({
 app.use(TestFactory);
 
 document.body.innerHTML = /*html*/ `
-    <div data-controller="app">
+    <app-controller>
+      <x-test></x-test>
+
+      <nested-controller>
         <x-test></x-test>
+      </nested-controller>
 
-        <div data-controller="nested-controller">
-            <x-test></x-test>
-        </div>
+      <x-test target="input"></x-test>
+      <input type="text" data-ref="input" data-scope="inputComponent">
+    </app-controller>
 
-        <x-test target="input"></x-test>
-        <input type="text" data-ref="input" data-scope="inputComponent">
-    </div>
-    <div data-controller="lazy">
-        <x-test lazy></x-test>
-    </div>
+    <lazy-controller lazy>
+      <x-test lazy></x-test>
+    </lazy-controller>
 `;
 
-const appController = document.querySelector('[data-controller="app"]');
+const appController = document.querySelector("app-controller");
 const app_x_test = appController.querySelector("x-test");
 
-const nestedController = appController.querySelector(
-  '[data-controller="nested-controller"]'
-);
+const nestedController = appController.querySelector("nested-controller");
 const nested_x_test = nestedController.querySelector("x-test");
 
 const inputComponent = appController.querySelector('input[data-ref="input"]');
 const target_x_test = appController.querySelector('x-test[target="input"]');
 
-const lazyController = document.querySelector('[data-controller="lazy"]');
+const lazyController = document.querySelector("lazy-controller");
 const lazy_x_test = document.querySelector("x-test[lazy]");
 
 describe("BaseComponent properties", () => {
@@ -78,44 +77,20 @@ describe("BaseComponent properties", () => {
     expect(app_x_test.namespace).toBeUndefined();
     expect(target_x_test.namespace).toBe("inputComponent");
   });
-  it("should initialize the closest controller if it has not been initialized", () => {
-    app.controller("later-controller", () => {});
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      /*html*/ `
-            <div data-controller="later-controller"></div>
-        `
-    );
-    const laterController = document.querySelector(
-      '[data-controller="later-controller"]'
-    );
-
-    expect(app.registry.get(laterController)).toBeUndefined();
-    laterController.appendChild(document.createElement("x-test"));
-    expect(app.registry.get(laterController)).toBeDefined();
-  });
-  it("should have the correct context", () => {
-    expect(app_x_test.context).toBe(app.registry.get(appController));
-    expect(nested_x_test.context).toBe(app.registry.get(nestedController));
-    expect(target_x_test.context).toBe(app.registry.get(appController));
-  });
 });
 
 describe("Lazy initialization", () => {
-  it("should schedule the intialization of the controller", () => {
-    expect(app.registry.has(lazyController)).toBe(false);
-    expect(app.scheduledRegistry.has(lazy_x_test)).toBe(true);
-    expect(lazy_x_test.context).toBeUndefined();
+  it("should enqueue its init method if the controller hasn't been initialized  ", () => {
+    expect(lazyController.initialized).toBe(false);
+    expect(lazyController.queue.has(lazy_x_test.init)).toBe(true);
+    expect(lazy_x_test.closestController.scope).toBeUndefined();
+    expect(lazy_x_test.textContent).toBe("");
   });
-  it("should register the controller when initialized from scheduler", () => {
-    app.initializeScheduled(lazy_x_test);
+  it("should be initialized after his corresponding controller", () => {
+    lazyController.init();
 
-    expect(app.registry.has(lazyController)).toBe(true);
-    expect(lazy_x_test.context).toBeDefined();
-    expect(lazy_x_test.context.scope).toEqual({ someValue: "hi" });
-  });
-
-  it("should trigger the onConnected method when initialized", () => {
+    expect(lazyController.initialized).toBe(true);
+    expect(lazy_x_test.closestController.scope).toEqual({ someValue: "hi" });
     expect(lazy_x_test.textContent).toBe("I'm initialized!");
   });
 });

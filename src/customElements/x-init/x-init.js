@@ -8,7 +8,7 @@ export const XInitFactory = (appInstance) =>
     resolveMethod(name) {
       return resolveProperty({
         propertyName: this.getAttribute(name) ?? null,
-        context: this.context.scope,
+        context: this.closestController.scope,
         namespace: this.namespace ?? null,
       });
     }
@@ -21,9 +21,5 @@ export const XInitFactory = (appInstance) =>
     onDisconected() {
       this.onElementDisconected?.(this.target);
       this.target.remove();
-
-      if (this.target?.dataset.controller) {
-        this.appInstance.registry.delete(this.closestController);
-      }
     }
   };

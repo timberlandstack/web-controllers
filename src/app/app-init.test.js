@@ -2,9 +2,10 @@ import { App as _App } from ".";
 
 const App = new _App();
 const partial = /*html*/ `
-<div data-controller="app">
-    <x-test></x-test>
-</div>
+<app-controller>
+  <x-test></x-test>
+</app-controller>
+
 `;
 
 describe("App init method", () => {
@@ -14,14 +15,11 @@ describe("App init method", () => {
     App.controller("app", ({ $scope, rootElement }) => {
       window.didRun = !window.didRun;
       $scope({ test: true });
-
       expect(rootElement).toBeInstanceOf(HTMLElement);
     });
-
-    App.init();
   });
 
-  it("should initialize the registered controllers with custom elements", () => {
+  it("should register custom elements", () => {
     let customElementInitialized = false;
 
     const testCustomElementFacotry = (appInstance) =>

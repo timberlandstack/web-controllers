@@ -3,7 +3,7 @@ import { XOnFactory } from "./x-on.js";
 
 const App = new _App();
 const partial = /*html*/ `
-<div data-controller="app">
+<app-controller>
     <h1 data-ref="count">0</h1>
     <button data-test-id="app-button">
       <x-on :click="increment" :mouseover="increment"></x-on>
@@ -13,13 +13,13 @@ const partial = /*html*/ `
     <x-on target="input" :input="changeName"></x-on>
     <input type="text" data-ref="input" />
 
-    <div data-controller="nested">
+    <nested-controller>
         <button data-test-id="nested-button">
           <x-on :click="increment, runCb, runOnce" :mouseover="increment"></x-on>
           Click me too!
         </button>
-    </div>
-</div>
+    </nested-controller>
+</app-controller>
 `;
 
 document.body.innerHTML = partial;

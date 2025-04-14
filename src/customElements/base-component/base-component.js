@@ -7,33 +7,27 @@ export const BaseComponent = (appInstance) =>
       this.isLazy = this.hasAttribute("lazy");
     }
 
-    baseActions = () =>
-      new Set([
-        this.initializeClosestController.bind(this),
-        this.setupProperties.bind(this),
-        this.onConnected?.bind(this),
-      ]);
-
     setupProperties() {
       this.style.display = "none";
-      this.context = this.appInstance.registry.get(this.closestController);
+
       this.target = this.targetName
-        ? this.context.$[this.targetName].reset().one()
+        ? this.closestController.$[this.targetName].reset().one()
         : this.parentElement;
 
       this.namespace = this.target.dataset?.scope;
     }
 
-    initializeClosestController() {
-      if (!this.appInstance.registry.has(this.closestController))
-        this.appInstance.initializeController(this.closestController, false);
-    }
+    init = () => {
+      this.setupProperties(this);
+      this.onConnected?.(this);
+    };
 
     connectedCallback() {
       this.closestController = this.closest("[data-controller]");
-      this.isLazy
-        ? this.appInstance.scheduledRegistry.set(this, this.baseActions())
-        : this.baseActions().forEach((action) => action());
+      if (!this.closestController.initialized)
+        this.closestController.queue.add(this.init);
+
+      if (!this.isLazy) this.init();
     }
     disconnectedCallback() {
       this.onDisconected?.();
