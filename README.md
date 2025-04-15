@@ -1,4 +1,4 @@
-# Timberland - Web Controllers
+# Timberland - Web Controllers <!-- omit in toc --> 
 The `web-controllers` package aims at being a more modern, lightweight and modular approach to alternatives like [jQuery](https://github.com/jquery/jquery) and [Stimulus](https://github.com/hotwired/stimulus).
 
 Some key features:
@@ -9,15 +9,42 @@ Some key features:
 > [!NOTE]
 > The API is still under active development. We can still cut down some code to compensate for new upcoming features, so this shouldn't change much.
 
-## Project status
+## Project status <!-- omit in toc -->
+
 This package is pretty new, pretty niche and hence I don't expect a crazy wild adoption. I will, however, assume the compromise of maintaining and developing this, mainly because I want this to exist. I *need* this to exist. We must try to enrich the JavaScript ecosystem outside of the frameworks land and aim at solutions that integrate well with traditional technologies. Hopefully, to prevent us from having to re-write a whole frontend in <your_famework_here> just because jQuery is not cool anymore.
 
 The API is almost stable, but I cannot guarantee anything until I (or we, if you reader decide to join me) hit a v1. There is a lot of testing to be done and so far 0 usage in production applications, so here be dragons. If you encounter anything unexpected, please feel free to open an issue!
 
-## Index
+## Index <!-- omit in toc --> 
+
+- [Installation](#installation)
+- [Example usage](#example-usage)
+- [Main concepts](#main-concepts)
+  - [Controllers](#controllers)
+  - [Context](#context)
+  - [Refs](#refs)
+  - [Special attributes](#special-attributes)
+  - [Utility Web Components](#utility-web-components)
+- [Reference (API/Usage)](#reference-apiusage)
+  - [`new App`](#new-app)
+    - [`.controller(controllerPrefix, callback)`](#controllercontrollerprefix-callback)
+    - [`.use(CustomElementFactory)`](#usecustomelementfactory)
+  - [`new Context(rootElement)`](#new-contextrootelement)
+    - [`.rootElement`](#rootelement)
+    - [`.$scope(hydrationScope)`](#scopehydrationscope)
+    - [`.$` proxy](#-proxy)
+    - [`.$select(selector, options)`](#selectselector-options)
+    - [`.$getQueryString`](#getquerystring)
+  - [`new Ref`](#new-ref)
+    - [`.one(attributes)`](#oneattributes)
+    - [`.all(attributes)`](#allattributes)
+    - [`reset`](#reset)
+  - [Custom Elements](#custom-elements)
+- [License](#license)
+
 
 ## Installation
-### With a package manager
+### With a package manager <!-- omit in toc --> 
 ```bash
 pnpm add @timberland/web-controllers
 ...
@@ -26,7 +53,7 @@ pnpm add @timberland/web-controllers
 ```javascript
 import { App } from '@timberland/web-controllers'
 ```
-### With a CDN
+### With a CDN <!-- omit in toc --> 
 ```html
 <!-- ESM -->
 <script type="module">
@@ -43,6 +70,10 @@ import { App } from '@timberland/web-controllers'
 > [!CAUTION] 
 > These examples should be used for development only. If you plan to use the CDN for production, pin a specific version. For instance: `https://unpkg.com/@timberland/web-controllers@0.0.9/dist/web-controllers.esm.js`. Check the releases section for getting the latest version.
 
+<br/>
+
+[Back to Index](#index)
+<br/>
 
 ## Example usage
 ```html
@@ -84,6 +115,10 @@ Brief explanation:
     4. Once it has accomplished its mission, it will be automatically removed from the DOM, leaving you with a clean, custom-elements and attributes-free DOM (other than the necessary, of course).
 
 Let's dive deeper! (Or, in case you are wondering "*what the hell...*", jump straight ahead to know more about [Utility Web Components](#utility-web-components)) 
+
+<br/>
+
+[Back to Index](#index)
 <br/>
 
 ## Main concepts
@@ -106,7 +141,7 @@ The approach is a little bit different, however, on the build-in web components.
 ### Utility Web Components
 > A foreword: I am mentioning libraries like Alpine, Stimulus and Lit. It goes without saying that I talk about them with my most profound and sincere respect. Those are all libraries I've used, and so do a lot of people in their day-to-day production applications. I love their work, I admire the great minds of creators and contributors behind them, and I can only dream of having at least a fraction of their intelligence and creativity. 
 
-#### Traditional Web Components approach
+#### Traditional Web Components approach <!-- omit in toc --> 
 I believe in the potential that web components have for the web, but they come with a few quirks. From my point of view, the most relevant ones are:
 1. They differ *a lot* from traditional frameworks components. Trying to compare them to, for instance, React components, will leave you pretty heart-broken. Even though they are components in the sense that they can allow you to abstract and reuse logic and pieces of HTML, they are regular DOM elements with almost the same limitations traditional frameworks aim at mitigating.
 2. They exist in the DOM, not just in the code base, most of the times creating unnecessary nesting and sacrificing semantics. Typically, you will see a `button` component as `<custom-button><button>I'm a button</button></custom-button>`, just so you can perform some declarative logic on that button. It goes without saying that you couldn't use them, for instance, for list items, or anywhere where semantics are important. It *is* possible to extend existing elements and their semantics, but Safari [doens't put it easy](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/is).
@@ -116,19 +151,19 @@ They do, however, allow us to achieve pretty neat things. For instance, with the
 
 Broadly speaking, I'd argue that the most exciting part about Web Components is that we can achieve a truly declarative approach in JavaScript without the need for any kind of workaounds, like using the `MutationObserver` API, or having to keep track of every DOM mutation by hand. When the browser detects a `custom-button` tag, it will perform whatever you told it to when it's connected or disconnected from the DOM (similar to `mounted` and `unmounted` lifecycles of other frameworks).
 
-#### Introducing Utility Web Components (UWCs)
+#### Introducing Utility Web Components (UWCs) <!-- omit in toc --> 
 With the concept of UWCs, I aim at meeting a middle ground between Web-Components-first libraries (like [Lit](https://github.com/lit/lit)) and attributes-first libraries (like [Alpine](https://github.com/alpinejs/alpine) or [Stimulus](https://github.com/hotwired/stimulus)).
 
 I won't dive any further into alternatives like Lit, since their target is mainly Client Side Rendered web components. If we were to compare this library, it would be better to do so with Alpine and Stimulus, since I also believe in the power of "traditional" Server Side Rendered apps. Let's have a few words about it.
 
-##### How they succeed at being declarative
+##### How they succeed at being declarative <!-- omit in toc --> 
 With the attributes-first approach, you define some attributes in your HTML and they will take care of the rest. Elements can exit and enter the DOM without you having to worry about lifecycle events or manually hydrating them. You just declare what you want your piece of HTML do, and they will handle it for you.
 
 This is nice, but both of them come with a few tradeoffs:
 - Alpine requires you to use their mechanisms for manipulating the DOM. Meaning, if you want to conditionally render an element or to have an `@click` action to take place, you cannot manually remove or add an element from the DOM. Your DOM becomes then a strict representation of the state of your application. This is totally fine, but may seem a bit of an overkill for apps where your initial state has been already server-side-rendered.
 - Stimulus (and more specifically, the Hotwire stack) follows more of a [HATEOAS](https://htmx.org/essays/hateoas/) approach, meaning that the state of your application is a direct reflection of your DOM. You can freely manipulate your DOM however you like, and Stimulus will make sure to properly handle the logic for everything to work just as you declare it. It does, however, use a `MutationObserver` under the hood. Which is fine, but we think we can achieve better performance and smaller bundle size with custom elements, which are just another mechanism that the web platform exposes to us. Another thing I don't particulary like is its verbosity, both on the HTML and JS sides.
 
-##### My approach
+##### Our approach <!-- omit in toc --> 
 By using web components, we can make sure the browser handles everything in the way it's supposed to. For initializing controllers (even lazily when they enter the viewport!), attaching event listeners or performing some logic when the target element is added or removed from the DOM, we can just nest custom elements instead of adding attributes. Picture this:
 
 ```html
@@ -181,16 +216,20 @@ In general, this approach allow us to just "don't give a damn" about how or when
 
 Of course it may seem weird at first. It did when first designing and developing this API. But it's really easy to get used to it. Surely it comes with a few tradeoffs of its own, but I strongly believe the good outweights the ugly. You can read more about the quirks [here](to-be-implemented-hehe).
 
-##### Does it mean I advocate against web components? 
+##### Does it mean I advocate against web components? <!-- omit in toc --> 
 Hell, **no**! UWCs are my proporsal for addressing these little things other libraries would address via attributes and observers. I still love the idea of web components, specially in form of [HTML Web Components](https://blog.jim-nielsen.com/2023/html-web-components/). They are an amazing way of super-charging traditional HTML elements, and I have a few ideas of my own about things I can build using the Timberland Stack together with web components. Stay tuned for more 🥸.
 
 Thanks a lot for reading and please feel free to share with me any idea about this. Let's now come back to the documentation.
+<br/>
+
+[Back to Index](#index)
+<br/>
 
 ## Reference (API/Usage)
 ### `new App`
 It returns an App instance with the following methods:
 
-#### `controller(controllerPrefix, callback)`
+#### `.controller(controllerPrefix, callback)`
 The first argument is a name that will be used as a prefix for registering the corresponding custom element. The second one is a callback that will receive a [`Context`](#new-contextrootelement) instance, and will later be merged into the custom element. Optionally, this can return an object containing methods that will be added to the [hydration scope](#contextscopehydrationscope):
 ```html
 <app-controller></app-controller>
@@ -205,8 +244,12 @@ app.controller('app', (ctx) => {
     return {}
 })
 ```
+<br/>
 
-#### `use(CustomElementFactory)`
+[Back to Index](#index)
+<br/>
+
+#### `.use(CustomElementFactory)`
 Method for registering the built-in custom elements (or your own, as log as they extend the `BaseComponent` class). They come in the form of a factory, because we need the `App` instance to make them work. Check out how the `x-on` custom element [is implemented](/src/customElements/x-init/x-init.js).
 
 You can pass them as comma separated arguments, or register them line by line. The only important rule is:
@@ -225,6 +268,10 @@ app.use(XOnFactory, XOnInitFactory)
 // app.use(XOnFactory)
 // app.use(XOnInitFactory)
 ```
+<br/>
+
+[Back to Index](#index)
+<br/>
 
 ### `new Context(rootElement)`
 The `Context` class is used under the hood to perform the custom logic you want on the controllers. You will **rarely** manually use it, but in case you need it, note that this is possible:
@@ -234,7 +281,7 @@ const someElement = document.querySelector('#some-element')
 const ctx = new Context(someElement) // you can access all properties and methods exposed by the context instance 
 ```
 
-#### `rootElement`
+#### `.rootElement`
 The HTML Element passed to the `Context` constructor. When registering controller, it will be the custom element itself:
 ```html
 <some-controller></some-controller>
@@ -247,8 +294,12 @@ app.controller('some', ({ rootElement }) => {
     expect(rootElement).toBe(customElement)
 })
 ```
+<br/>
 
-#### `$scope(hydrationScope)`
+[Back to Index](#index)
+<br/>
+
+#### `.$scope(hydrationScope)`
 This accepts an object that will be exposed when hydrating your HTML. You can call it as many times as you need, as it will be performing a merge under the hood:
 ```html
 <hydratable-controller>
@@ -279,8 +330,12 @@ document.querySelector('hydratable-controller').scope // -> { logToConsole: ...,
 
 > [!NOTE]
 > If you return a hydration context, it will be merged as well. The `$scope` method is just a little helper useful for organizing code inside your controller. It is also used under the hood when returning a hydration context.
+<br/>
 
-#### `$`
+[Back to Index](#index)
+<br/>
+
+#### `.$` proxy
 The `$` helper is a [`Proxy`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) instance that will help you dynamically select any element with a `data-ref` attribute scoped inside the controller element. It will return a `Ref` instance:
 
 ```html
@@ -297,7 +352,12 @@ app.controller('app', ({ $ }) => {
 ```
 Notice that in the example above, the `one` method is a method of the `Ref` element. Checkout the [`Ref`](#new-ref) section to learn more.
 
-#### `$select(selector, options)`
+<br/>
+
+[Back to Index](#index)
+<br/>
+
+#### `.$select(selector, options)`
 Equivalent to `querySelector` but implementing cache and scoping inside controllers. When called, it checks if there's a maching element stored in the controller's cache. If so, it will return the element or array of elements instead of performing a query, so it's safe to use it as jQuery's `$` function. It accepts the following options:
 
 - `all` (default: `false`): Controll if it should select all matching elements or just one
@@ -339,8 +399,12 @@ app.controller('nested', ({ $select }) => {
 ```
 > [!TIP]
 > If you plan to have a lot of elements entering and exiting the DOM, we recommend using [`Ref`](#new-ref) instead
+<br/>
 
-#### `$getQueryString`
+[Back to Index](#index)
+<br/>
+
+#### `.$getQueryString`
 Given a regular `querySelector`-purposed string, his method returns the complete query string accounting for nested controllers. Under the hood, this is how the rest of methods achieve encapsulation:
 
 ```html
@@ -362,6 +426,10 @@ app.controller('nested', ({ $getQueryString }) => {
     $getQueryString('button') // -> button  
 })
 ```
+<br/>
+
+[Back to Index](#index)
+<br/>
 
 ### `new Ref`
 As stated previously, the `$` helper inside the `Context` instance will return intances of the `Ref` class. You should not care about how they are instantiated, since the `$` proxy of the `Context` takes care for you. They come with the following methods:
@@ -400,6 +468,10 @@ app.controller('app', ({ $, rootElement }) => {
    
 })
 ```
+<br/>
+
+[Back to Index](#index)
+<br/>
 
 #### `.all(attributes)`
 It returns an array with all matching HTMLElements. Similarly to the `one` method, this also accepts an object with attributes. In this case its even more useful, since attributes will be applied to all matching refs. You can still manipulate them in a loop if you want.
@@ -431,12 +503,20 @@ app.controller('app', ({ $, rootElement }) => {
    
 })
 ```
+<br/>
+
+[Back to Index](#index)
+<br/>
 
 #### `reset`
 It would be the equivalent of passing `invalidate: true` to the `$select` helper. It returns the `Ref` itself so we can call `one` or `all` again.
 
 > [!TIP]
 > Refs will keep track of their last accessed value. If you access `$.refName.one()` and later `$.refName.all()`, it is assumed that you want to invalidate the query, so its not necessary to call `reset` to change from a `one` to an `all`.
+> <br/>
+
+[Back to Index](#index)
+<br/>
 
 ### Custom Elements
 
