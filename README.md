@@ -364,8 +364,79 @@ app.controller('nested', ({ $getQueryString }) => {
 ```
 
 ### `new Ref`
-As stated previously, the `$` helper inside the `Context` instance will return intances of the `Ref` class. 
-...
+As stated previously, the `$` helper inside the `Context` instance will return intances of the `Ref` class. You should not care about how they are instantiated, since the `$` proxy of the `Context` takes care for you. They come with the following methods:
+
+#### `.one(attributes)`
+It returns the first element matching the accessed name nested inside the controller. Know that, under the hood, it is using the `$select` method, so it will implement a cache mechanism as well. Optionally, you can provide an object with event handlers, attributes and properties that will be automatically assigned to it:
+
+```html
+<app-controller>
+    <button data-ref="btn">My button</button>
+</app-controller>
+```
+```javascript
+const app = new App()
+
+app.controller('app', ({ $, rootElement }) => {
+   // This will be the first time selecting it. Every subsequent time
+   // we access to it it will grab it from the cache.
+   $.btn.one().textContent = "My text content changed"
+   $.btn.one().addEventlistener('click', doSomething, { once: true })
+   $.btn.one().setAttribute('data-hello', 'world')
+
+   // Can also be done like:
+   $.btn.one({
+      textContent: "My text content changed",
+      // event handlers must start with "on"
+      onclick: {
+         eventHandler: doSomething
+         options: {
+            once: true
+         }
+      },
+      "data-hello": "world"
+   })
+
+   
+})
+```
+
+#### `.all(attributes)`
+It returns an array with all matching HTMLElements. Similarly to the `one` method, this also accepts an object with attributes. In this case its even more useful, since attributes will be applied to all matching refs. You can still manipulate them in a loop if you want.
+
+```html
+<app-controller>
+    <button data-ref="btn">I'm scoped to the app controller</button>
+    <button data-ref="btn" data-message="hello">I'm also scoped to the app controller</button>
+</app-controller>
+```
+```javascript
+const app = new App()
+
+app.controller('app', ({ $, rootElement }) => {
+    $.btn.all() // -> returns an Array with two HTMLButtonElements
+
+    // appending a new button to the root element
+    rootElement.appendChild(
+        document.createElement('button')
+    )
+
+    $.btn.reset().all() // -> It will now select the new button as well.
+    $.btn.all().forEach(...)
+
+    $.btn.all({
+      // If we provide a function, it will be called passing the current element
+      textContent: (btn) => `${btn.dataset.message ?? "Default message"}`,
+    })
+   
+})
+```
+
+#### `reset`
+It would be the equivalent of passing `invalidate: true` to the `$select` helper. It returns the `Ref` itself so we can call `one` or `all` again.
+
+> [!TIP]
+> Refs will keep track of their last accessed value. If you access `$.refName.one()` and later `$.refName.all()`, it is assumed that you want to invalidate the query, so its not necessary to call `reset` to change from a `one` to an `all`.
 
 ### Custom Elements
 
