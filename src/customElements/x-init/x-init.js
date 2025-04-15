@@ -13,8 +13,8 @@ export const XInitFactory = (appInstance) =>
       });
     }
     onConnected() {
-      this.onElementConnected = this.resolveMethod("connected");
-      this.onElementDisconected = this.resolveMethod("disconnected");
+      this.onElementConnected = this.resolveMethod(":connected");
+      this.onElementDisconected = this.resolveMethod(":disconnected");
 
       this.onElementConnected?.(this.target);
     }

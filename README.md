@@ -15,7 +15,7 @@ This package is pretty new, pretty niche and hence I don't expect a crazy wild a
 
 The API is almost stable, but I cannot guarantee anything until I (or we, if you reader decide to join me) hit a v1. There is a lot of testing to be done and so far 0 usage in production applications, so here be dragons. If you encounter anything unexpected, please feel free to open an issue!
 
-## Index <!-- omit in toc --> 
+## Table of contents <!-- omit in toc --> 
 
 - [Installation](#installation)
 - [Example usage](#example-usage)
@@ -39,8 +39,9 @@ The API is almost stable, but I cannot guarantee anything until I (or we, if you
     - [`.one(attributes)`](#oneattributes)
     - [`.all(attributes)`](#allattributes)
     - [`reset`](#reset)
-  - [Custom Elements](#custom-elements)
-- [License](#license)
+  - [Custom Elements (Utility Web Components)](#custom-elements-utility-web-components)
+    - [`x-on`](#x-on)
+    - [`x-init`](#x-init)
 
 
 ## Installation
@@ -72,7 +73,7 @@ import { App } from '@timberland/web-controllers'
 
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 ## Example usage
@@ -118,7 +119,7 @@ Let's dive deeper! (Or, in case you are wondering "*what the hell...*", jump str
 
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 ## Main concepts
@@ -201,7 +202,7 @@ In this Alpine example, there are a few things going on:
     -->
     <template data-ref="messageTemplate">
         <p>
-            <x-init connected="onMessageShown" disconnected="onMessageDisconnected">
+            <x-init :connected="onMessageShown" :disconnected="onMessageDisconnected">
             I'm a message
         </p>
     </template>
@@ -222,7 +223,7 @@ Hell, **no**! UWCs are my proporsal for addressing these little things other lib
 Thanks a lot for reading and please feel free to share with me any idea about this. Let's now come back to the documentation.
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 ## Reference (API/Usage)
@@ -246,7 +247,7 @@ app.controller('app', (ctx) => {
 ```
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 #### `.use(CustomElementFactory)`
@@ -258,19 +259,19 @@ You can pass them as comma separated arguments, or register them line by line. T
 
 Example usage:
 ```javascript
-import { App, XOnFactory, XOnInitFactory } from "@timberland/web-controllers";
+import { App, XOnFactory, XInitFactory } from "@timberland/web-controllers";
 
 const app = new App()
 // your controllers must come first
 app.controller(...)
-app.use(XOnFactory, XOnInitFactory)
+app.use(XOnFactory, XInitFactory)
 // OR:
 // app.use(XOnFactory)
-// app.use(XOnInitFactory)
+// app.use(XInitFactory)
 ```
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 ### `new Context(rootElement)`
@@ -296,7 +297,7 @@ app.controller('some', ({ rootElement }) => {
 ```
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 #### `.$scope(hydrationScope)`
@@ -330,9 +331,12 @@ document.querySelector('hydratable-controller').scope // -> { logToConsole: ...,
 
 > [!NOTE]
 > If you return a hydration context, it will be merged as well. The `$scope` method is just a little helper useful for organizing code inside your controller. It is also used under the hood when returning a hydration context.
+
+> [!WARNING]
+> There are only two property names that are reserved: `connected` and `disconnected`. They will be run in the respective lifecycle methods of the controller and then deleted from the scope.
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 #### `.$` proxy
@@ -354,7 +358,7 @@ Notice that in the example above, the `one` method is a method of the `Ref` elem
 
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 #### `.$select(selector, options)`
@@ -401,7 +405,7 @@ app.controller('nested', ({ $select }) => {
 > If you plan to have a lot of elements entering and exiting the DOM, we recommend using [`Ref`](#new-ref) instead
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 #### `.$getQueryString`
@@ -428,7 +432,7 @@ app.controller('nested', ({ $getQueryString }) => {
 ```
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 ### `new Ref`
@@ -470,7 +474,7 @@ app.controller('app', ({ $, rootElement }) => {
 ```
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 #### `.all(attributes)`
@@ -505,7 +509,7 @@ app.controller('app', ({ $, rootElement }) => {
 ```
 <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
 #### `reset`
@@ -515,10 +519,110 @@ It would be the equivalent of passing `invalidate: true` to the `$select` helper
 > Refs will keep track of their last accessed value. If you access `$.refName.one()` and later `$.refName.all()`, it is assumed that you want to invalidate the query, so its not necessary to call `reset` to change from a `one` to an `all`.
 > <br/>
 
-[Back to Index](#index)
+[Back to Index](#table-of-contents-)
 <br/>
 
-### Custom Elements
+### Custom Elements (Utility Web Components)
+For the time being, we just provide two built-in custom elements. As stated in the previous sections, they aim at being a more declarative alternative to attributes. 
 
-## License
+They both work in the same way: given a set of special attributes, they will look up for them in their closest controller's hydration context (either returned from the controller callback or added via the [`$scope`](#scopehydrationscope) helper). There is no javascript evaluation whatsoever. If you need to perform any conditional action based on a value you would typically pass down as an argument for the event handler, the best approach would be to use a dataset on the target element.
+
+They both share these common attributes:
+- `target`: It specifies the target element the action should be performed on. This is specially useful for void elements that cannot contain any children. It will find the first element of the controller with a matching `data-ref` attribute.
+- `lazy`: It delays the initialization until the element enters the viewport.
+
+#### `x-on`
+Its mission is to attach event listeners to its target. If not specified otherwise, the target will be its closest parent element. It will look for methods in the controller, or for an object with an `eventHandler` and `options` properties. Once the events are added to the target element, it will be removed from the DOM.
+
+You can add as many event names as you want as long as they are provided in the `:<event-name>` format. Every attribute starting with a colon (`:`) will be treated as an event name. It can therefore be used for custom events as well. If you want several handlers for the same event, separate them with commas.
+
+```html
+<app-controller>
+    <!-- 
+        It targets the app controller and will work only 
+        after it enters the viewport.
+    -->
+    <x-on lazy :click="handleClick, handleDelegatedClick" :mouseover="logCursorPosition">
+
+    <form>
+        <!-- It targets the form element -->
+        <x-on :submit="handleSubmit"></x-on>
+        <label>Enter your name:
+            <!-- 
+                It targets the input element and will work only 
+                after it (the input element) enters the viewport 
+             -->
+            <x-on target="nameInput" :input="validateInput" :focusout="validateInput">
+            <input type="text" name="name_input" data-ref="nameInput"/>
+        </label>
+    </form>
+</app-controller>
+```
+```javascript
+import { App, XOnFactory } from "@timberland/web-controllers"
+const app = new App()
+
+app.controller('app', () => {
+    return {
+        // return all methods exactly as written in the HTML
+    }
+})
+
+app.use(XOnFactory)
+```
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
+
+#### `x-init`
+It's used to perform effects when the target element enters and exits the DOM. Since this it can be initialized lazily, it can be also used for detecting when the target element enters the viewport.
+
+The only two attributes are `:connected` and `:disconnected`. As for the `x-on` element, they will look for the callback to execute in the hydration scope.
+
+```html
+<app-controller>
+    <x-init 
+        target="img" 
+        data-ref="imgInit" 
+        :disconnected="imgDisconnected">
+    </x-init>
+    <img data-ref="img" src="..." alt="" />
+
+    <template data-ref="tmp">
+        <p>
+            <x-init :connected="pConnected"></x-init>
+        </p>
+    </template>
+</app-controller>
+
+```
+```javascript
+import { App, XInitFactory } from "@timberland/web-controllers";
+const app = new App()
+
+app.controller('app', ({ $ }) => {
+    // This will trigger all the specified callbacks
+    $.imgInit.one().replaceWith(
+        $.tmp.one().content
+    )
+
+    return {
+        // return all methods exactly as written in the HTML
+    }
+})
+
+app.use(XInitFactory)
+
+```
+
+> [!NOTE]
+> If you paid close attention, you will notice that in the case of the image element, we are actually targetting the `x-init` element for its elimination. When the `x-init` is removed, it will make sure its target gets removed as well. This can get **really weird**, so I'd personally suggest you wrap your element to be deleted inside another non-void element 😅 
+
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
+
+## License <!-- omit in toc -->
 MIT

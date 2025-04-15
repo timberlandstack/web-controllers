@@ -3,26 +3,26 @@ import { XInitFactory } from "./x-init";
 
 const template = /*html*/ `
 <app-controller>
-    <x-init disconnected="onAppDestroyed"></x-init>
+    <x-init :disconnected="onAppDestroyed"></x-init>
 
     <ul>
         <li data-test-id="1">
-            <x-init disconnected="onItemDestroyed"></x-init>
+            <x-init :disconnected="onItemDestroyed"></x-init>
         </li>
         <li data-test-id="2">
-            <x-init disconnected="onItemDestroyed"></x-init>
+            <x-init :disconnected="onItemDestroyed"></x-init>
         </li>
     </ul>
 </app-controller>
 `;
 const enteringElement = /*html*/ `
 <span>
-    <x-init connected="onSpanAdded"></x-init>
+    <x-init :connected="onSpanAdded"></x-init>
 </span>
 `;
 
 const enteringVoidElement = /*html*/ `
-<x-init connected="inputEntered" disconnected="onItemDestroyed" target="input"></x-init>
+<x-init :connected="inputEntered" :disconnected="onItemDestroyed" target="input"></x-init>
 <input type="text" data-ref="input">
 `;
 
