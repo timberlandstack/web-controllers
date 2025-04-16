@@ -1,52 +1,64 @@
-import { Context } from "../src";
-import { setDocument } from "./utils/lib";
+import { App } from "../app";
 
-const partialName = "context";
+const partial = /*html*/ `
+<x-controller name="app">
+    <!-- this should be selected from app context -->
+    <button data-ref="btn">
+        Inc
+    </button>
+    <div>
+        <!-- this should be selected from app context -->
+        <button data-ref="btn">Text</button>
+    </div>
+
+    <x-controller name="inner">
+        <span id="count">0</span>
+
+        <!-- this should NOT be selected from app context -->
+        <button data-ref="btn">sdf</button>
+    </x-controller>
+</x-controller>
+`;
+
+const app = new App();
+let appCtx;
+let innerCtx;
+app.controller("app", (ctx) => (appCtx = ctx));
+app.controller("inner", (ctx) => (innerCtx = ctx));
+document.body.innerHTML = partial;
+
+const appRoot = document.querySelector("x-controller[name='app']");
 
 describe("context utilities", () => {
-  setDocument(partialName);
-  const appRoot = document.querySelector("[data-controller=app]");
-
   describe("getQueryString method", () => {
     it("should return the correct query string", () => {
-      const appCtx = new Context(appRoot);
       expect(appCtx.$getQueryString("button")).toBe(
-        'button:not( [data-controller="inner"] * )',
+        'button:not( x-controller[name="inner"] * )'
       );
 
-      const innerCtx = new Context(
-        document.querySelector("[data-controller=inner]"),
-      );
       expect(innerCtx.$getQueryString("button")).toBe("button");
     });
   });
   describe("select method", () => {
     it("should select elements only inside scope", () => {
-      const appCtx = new Context(appRoot);
-
       const foundElements = appCtx.$select("button", { all: true });
       expect(foundElements.length).toBe(2);
     });
 
     it("should return a single element if only one element matches the selector", () => {
-      const appCtx = new Context(appRoot);
-
-      const foundElement = appCtx.$select("[data-controller=inner]");
+      const foundElement = appCtx.$select("x-controller[name=inner]");
       expect(foundElement).toBeInstanceOf(HTMLElement);
     });
   });
 
   describe("refs proxy", () => {
-    setDocument(partialName);
-    const appRoot = document.querySelector("[data-controller=app]");
-
     it("should select elements with data-ref attribute inside component scope", () => {
-      const { $ } = new Context(appRoot);
+      const { $ } = appCtx;
       expect($.btn.all().length).toBe(2);
     });
 
     it("should invalidate the query if the rest method is provided second argument", () => {
-      const { $ } = new Context(appRoot);
+      const { $ } = appCtx;
       $.btn.one();
       const newBtn = document.createElement("button");
       newBtn.dataset.ref = "btn";
@@ -57,38 +69,33 @@ describe("context utilities", () => {
     });
 
     it("should automatically invalidate the references if all or one is accessed after the other", () => {
-      setDocument(partialName);
-      const appRoot = document.querySelector("[data-controller=app]");
-
-      const { $ } = new Context(appRoot);
+      const { $ } = appCtx;
       $.btn.one();
 
       expect($.btn.one()).toBeInstanceOf(HTMLElement);
-      expect($.btn.all().length).toBe(2);
+      expect($.btn.all().length).toBe(3);
     });
 
     it("should accept an object with attributes for hydrating ad-hoc", () => {
-      setDocument(partialName);
-      const appRoot = document.querySelector("[data-controller=app]");
-
-      const { $, $select } = new Context(appRoot);
+      const { $ } = appCtx;
       let count = 0;
 
       $.btn
         .all({
           onclick: () => count++,
           "data-hello": "world",
-          class: "test-class",
+          classList: "test-class",
+          textContent: (el) => `I'm a ${el.tagName}`,
         })
-        .forEach((btn, i) => {
-          expect(count).toBe(i);
+        .forEach((btn, index) => {
+          expect(count).toBe(index);
           btn.click();
           expect(btn.dataset.hello).toBe("world");
           expect(btn.classList.contains("test-class")).toBe(true);
+          expect(btn.textContent).toBe(`I'm a BUTTON`);
         });
 
-      const innerController = $select("[data-controller=inner]");
-      const { $: inner$ } = new Context(innerController);
+      const { $: inner$ } = innerCtx;
       let innerCount = 0;
 
       const { btn } = inner$;
@@ -111,27 +118,23 @@ describe("context utilities", () => {
 
   describe("scope method", () => {
     it("should accept a hydration context", () => {
-      const ctx = new Context(appRoot);
-
-      ctx.$scope({
+      appCtx.$scope({
         count: 0,
       });
 
-      expect(ctx.scope.count).toBe(0);
+      expect(appCtx.scope.count).toBe(0);
     });
 
     it("should bind the methods to the scope", () => {
-      const ctx = new Context(appRoot);
-
-      ctx.$scope({
+      appCtx.$scope({
         count: 0,
         inc() {
           this.count++;
         },
       });
 
-      ctx.scope.inc();
-      expect(ctx.scope.count).toBe(1);
+      appCtx.scope.inc();
+      expect(appCtx.scope.count).toBe(1);
     });
   });
 });
