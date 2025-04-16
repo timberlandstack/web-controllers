@@ -1,5 +1,12 @@
 # @timberland/web-controllers
 
+## 0.0.9
+
+### Patch Changes
+
+- 7464e93: - Redefine how controllers work by introducing the `x-controller` custom element
+  - Implement lazy loading for controllers
+
 ## 0.0.8
 
 ### Patch Changes
