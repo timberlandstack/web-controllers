@@ -1,6 +1,23 @@
 import { App } from "../../app";
 import { BaseComponent } from "./base-component";
 
+document.body.innerHTML = /*html*/ `
+    <x-controller name="app">
+      <x-test></x-test>
+
+      <x-controller name="nested">
+        <x-test></x-test>
+      </x-controller>
+
+      <x-test target="input"></x-test>
+      <input type="text" data-ref="input" data-scope="inputComponent">
+    </x-controller>
+
+    <x-controller name="lazy" lazy>
+      <x-test lazy></x-test>
+    </x-controller>
+`;
+
 const TestFactory = (appInstance) =>
   class Test extends BaseComponent(appInstance) {
     static selector = "x-test";
@@ -26,33 +43,18 @@ app.controller("lazy", () => ({
 
 app.use(TestFactory);
 
-document.body.innerHTML = /*html*/ `
-    <app-controller>
-      <x-test></x-test>
-
-      <nested-controller>
-        <x-test></x-test>
-      </nested-controller>
-
-      <x-test target="input"></x-test>
-      <input type="text" data-ref="input" data-scope="inputComponent">
-    </app-controller>
-
-    <lazy-controller lazy>
-      <x-test lazy></x-test>
-    </lazy-controller>
-`;
-
-const appController = document.querySelector("app-controller");
+const appController = document.querySelector("x-controller[name=app]");
 const app_x_test = appController.querySelector("x-test");
 
-const nestedController = appController.querySelector("nested-controller");
+const nestedController = appController.querySelector(
+  "x-controller[name=nested]"
+);
 const nested_x_test = nestedController.querySelector("x-test");
 
 const inputComponent = appController.querySelector('input[data-ref="input"]');
 const target_x_test = appController.querySelector('x-test[target="input"]');
 
-const lazyController = document.querySelector("lazy-controller");
+const lazyController = document.querySelector("x-controller[name=lazy]");
 const lazy_x_test = document.querySelector("x-test[lazy]");
 
 describe("BaseComponent properties", () => {

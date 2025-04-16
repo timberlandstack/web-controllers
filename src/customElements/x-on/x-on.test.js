@@ -3,7 +3,7 @@ import { XOnFactory } from "./x-on.js";
 
 const App = new _App();
 const partial = /*html*/ `
-<app-controller>
+<x-controller name="app">
     <h1 data-ref="count">0</h1>
     <button data-test-id="app-button">
       <x-on :click="increment" :mouseover="increment"></x-on>
@@ -13,13 +13,13 @@ const partial = /*html*/ `
     <x-on target="input" :input="changeName"></x-on>
     <input type="text" data-ref="input" />
 
-    <nested-controller>
+    <x-controller name="nested">
         <button data-test-id="nested-button">
           <x-on :click="increment, runCb, runOnce" :mouseover="increment"></x-on>
           Click me too!
         </button>
-    </nested-controller>
-</app-controller>
+    </x-controller>
+</x-controller>
 `;
 
 document.body.innerHTML = partial;
@@ -74,7 +74,7 @@ describe("Attaching event listeners", () => {
   // test if it works for several data-on elements
 
   it("should work with comma separated events", () => {
-    const nested = document.querySelector('[data-controller="nested"]');
+    const nested = document.querySelector('x-controller[name="nested"]');
     const nestedButton = nested.querySelector("button");
     nestedButton.click();
     expect(didRun).toBe(true);

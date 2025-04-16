@@ -2,47 +2,49 @@ import { App } from "../../app";
 import { Context } from "../../context";
 
 const template = /*html*/ `
-    <app-controller>
+    <x-controller name="app">
         <button>Hi</button>
 
-        <nested-controller lazy>
+        <x-controller name="nested" lazy>
             <button>Hi</button>
-        </nested-controller>
-    </app-controller>
+        </x-controller>
+    </x-controller>
 `;
-
-const app = new App();
 
 document.body.innerHTML = template;
 
-const appController = document.querySelector("app-controller");
-const nestedController = document.querySelector("nested-controller");
+const appController = document.querySelector("x-controller[name='app']");
+const nestedController = document.querySelector("x-controller[name='nested']");
 
-describe("App#_controller method", () => {
+const app = new App();
+
+app.controller("app", (ctx) => {
+  ctx.$scope({
+    connected: (element) => {
+      element.dataset.hello = "world";
+    },
+  });
+
+  return {
+    hello: "world",
+  };
+});
+app.controller("nested", () => {
+  return {
+    nested: true,
+  };
+});
+
+// app.init();
+
+describe("App#controller method", () => {
   it('should register a custom element starting with the controller name and the word "controller"', () => {
-    app.controller("app", (ctx) => {
-      ctx.$scope({
-        connected: (element) => {
-          element.dataset.hello = "world";
-        },
-      });
-
-      return {
-        hello: "world",
-      };
-    });
-
     expect(appController.scope).toEqual({ hello: "world" });
     expect(appController.dataset.hello).toBe("world");
     expect(appController.initialized).toBe(true);
   });
 
   it("should respect the lazy attribute", () => {
-    app.controller("nested", () => {
-      return {
-        nested: true,
-      };
-    });
     expect(nestedController.initialized).toBe(false);
     expect(nestedController.scope).toBeUndefined();
   });

@@ -23,7 +23,7 @@ export const BaseComponent = (appInstance) =>
     };
 
     connectedCallback() {
-      this.closestController = this.closest("[data-controller]");
+      this.closestController = this.closest("x-controller");
       if (!this.closestController.initialized)
         this.closestController.queue.add(this.init);
 

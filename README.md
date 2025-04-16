@@ -3,20 +3,18 @@ The `web-controllers` package aims at being a more modern, lightweight and modul
 
 Some key features:
 - Easily select and hydrate elements (`Ref`s) inside and scoped to the controller
-- Optional Utility Web Components (more specifically, `CustomElements` API) for having a declarative experience in your HTML
-- Lazy initialize the controllers for better performance and as a more declarative replacement for the `IntersectionObserver` (which is used behind scenes)
+- Utility Web Components (more specifically, `CustomElements` API) for having a declarative experience in your HTML, like automatically initializing elements, handling lifecyle events and attaching event listeners
+- Execute your declarative code lazily for better performance and as a more declarative replacement for the `IntersectionObserver` (which is used behind scenes)
 - Very small bundle size: **1.5kb** minified + gzipped, but can be stripped down if you don't want to use the built-in custom elements.
 > [!NOTE]
 > The API is still under active development. We can still cut down some code to compensate for new upcoming features, so this shouldn't change much.
 
 ## Project status <!-- omit in toc -->
-
 This package is pretty new, pretty niche and hence I don't expect a crazy wild adoption. I will, however, assume the compromise of maintaining and developing this, mainly because I want this to exist. I *need* this to exist. We must try to enrich the JavaScript ecosystem outside of the frameworks land and aim at solutions that integrate well with traditional technologies. Hopefully, to prevent us from having to re-write a whole frontend in <your_famework_here> just because jQuery is not cool anymore.
 
 The API is almost stable, but I cannot guarantee anything until I (or we, if you reader decide to join me) hit a v1. There is a lot of testing to be done and so far 0 usage in production applications, so here be dragons. If you encounter anything unexpected, please feel free to open an issue!
 
 ## Table of contents <!-- omit in toc --> 
-
 - [Installation](#installation)
 - [Example usage](#example-usage)
 - [Main concepts](#main-concepts)
@@ -78,7 +76,7 @@ import { App } from '@timberland/web-controllers'
 
 ## Example usage
 ```html
-<app-controller>
+<x-controller name="app">
     <p data-ref="message">No one said hi...</p>
 
     <button>
@@ -88,7 +86,7 @@ import { App } from '@timberland/web-controllers'
 
     <!-- If we prefer to just select the button instead of using the x-on component -->
     <!-- <button data-ref="actionBtn">Click me!</button> -->
-</app-controller>
+</x-controller>
 ```
 ```javascript
 import { App, XOnFactory } from "@timberland/web-controllers"
@@ -107,13 +105,13 @@ app.use(XOnFactory)
 ```
 Brief explanation: 
 1. We are creating an instance of the `App` class.
-2. We are registering a controller, in which we are receiving a `Context` as the only argument, and using one of its helpers to select and manipulate an existing HTML Element (with the `$` proxy). This controller will be usable in the DOM by adding `-controller` to the registered tag name.
+2. We are registering a controller, in which we are receiving a `Context` as the only argument, and using one of its helpers to select and manipulate an existing HTML Element (with the `$` proxy). This controller will be usable in the DOM with the `x-controller` custom element and adding its respective name.
 3. We are returning an object from the controller. This object will be the scope in which the custom element will look for the specified methods. Mind that there is no evaluation whatsoever here, its just mere string lookup in the returned object. This is completely optional, as we could simply select and hydrate the button by hand, as illustrated in the commented code.
-4. Whe are nesting an `x-on` custom element inside the button. This will:
+4. We are nesting an `x-on` custom element inside the button. This will:
     1. Find it closest `x-controller` element.
-    2. Check if it has been initialized.
+    2. Check if it has been initialized. If so, it will attach the corresponding event listeners to its target element (the button).
     3. If it hasn't been initialized (for instance, because you want it to be initialized lazily), it will enqueue its `init` method inside the controller, ensuring it only performs its logic once the context is available.
-    4. Once it has accomplished its mission, it will be automatically removed from the DOM, leaving you with a clean, custom-elements and attributes-free DOM (other than the necessary, of course).
+    4. Once it has accomplished its mission, it will be automatically removed from the DOM.
 
 Let's dive deeper! (Or, in case you are wondering "*what the hell...*", jump straight ahead to know more about [Utility Web Components](#utility-web-components)) 
 
@@ -124,7 +122,7 @@ Let's dive deeper! (Or, in case you are wondering "*what the hell...*", jump str
 
 ## Main concepts
 ### Controllers
-Controllers are custom elements that are automatically defined based on the provided name together with a `-controller` suffix. The idea is fairly simple: you register a controller name together with an associated callback that will run during the initialization phase of the element. Said callback will have access to its respective `Context` instance.
+Controllers are custom elements (`x-controller`) that will look for a callback matching its name attribute. The idea is fairly simple: you register a controller name together with an associated callback that will run during the initialization phase of the element. Said callback will have access to its respective `Context` instance.
 
 ### Context
 The Context that holds all the utils for making our lives easier and pass it down during the controller's initialization phase. Here we can manipulate the root element, perform queries scoped to the controller itself, access references (or `Ref`s) and exposing methods available for hydration. It will then be merged into the custom element's properties, making it easily accessible for other controllers or your own scripts (one of the advantages of using custom elements for this).
@@ -190,7 +188,7 @@ In this Alpine example, there are a few things going on:
 
 ```html
 <!-- An example snippet using Web Controllers -->
-<message-controller>
+<x-controller name="message">
     <button>
         <x-on :click="toggleMessage"></x-on>
         Click me!
@@ -206,14 +204,14 @@ In this Alpine example, there are a few things going on:
             I'm a message
         </p>
     </template>
- </message-controller>
+ </x-controller>
 ```
 In this case:
 1. We don't need to initialize anything. Since the controller is a custom element, the browser knows what to do with it when it encounters it. We can also schedule its initialization to take place when entering the viewport.
 2. We don't know how, why and at which point of the execution of the app this button with an "onclick" handler arrived. But we don't care, the `x-on` custom element takes care of attaching the corresponding event listeners.
 3. Same with the `p` tag. The `x-init` component is smart enough as to know what to do when it is connected or disconnected from the DOM.
 
-In general, this approach allow us to just "don't give a damn" about how or when the DOM is manipulated. We could still (and are planning to) introduce some reactivity mechanisms, but they can be totally optional. No MutationObserver, no complex tracking mechanisms... nothing. Bundle size small, me is happy.
+In general, this approach allow us to just "don't give a damn" about how or when the DOM is manipulated. We could still (and are planning to) introduce some reactivity mechanisms, but they can be totally optional and deatached from hydration logic. No MutationObserver, no complex tracking mechanisms... nothing. Bundle size small, me is happy.
 
 Of course it may seem weird at first. It did when first designing and developing this API. But it's really easy to get used to it. Surely it comes with a few tradeoffs of its own, but I strongly believe the good outweights the ugly. You can read more about the quirks [here](to-be-implemented-hehe).
 
@@ -231,9 +229,9 @@ Thanks a lot for reading and please feel free to share with me any idea about th
 It returns an App instance with the following methods:
 
 #### `.controller(controllerPrefix, callback)`
-The first argument is a name that will be used as a prefix for registering the corresponding custom element. The second one is a callback that will receive a [`Context`](#new-contextrootelement) instance, and will later be merged into the custom element. Optionally, this can return an object containing methods that will be added to the [hydration scope](#contextscopehydrationscope):
+The first argument is a name that will be used by the corresponding custom element once its initialized. The second one is a callback that will receive a [`Context`](#new-contextrootelement) instance, and will later be merged into the custom element. Optionally, this can return an object containing methods that will be added to the [hydration scope](#contextscopehydrationscope):
 ```html
-<app-controller></app-controller>
+<x-controller name="app"></x-controller>
 ```
 ```javascript
 const app = new App()
@@ -285,13 +283,13 @@ const ctx = new Context(someElement) // you can access all properties and method
 #### `.rootElement`
 The HTML Element passed to the `Context` constructor. When registering controller, it will be the custom element itself:
 ```html
-<some-controller></some-controller>
+<x-controller name="some-controller"></x-controller>
 ```
 ```javascript
 const app = new App()
-const customElement = document.querySelector('some-controller')
+const customElement = document.querySelector('x-controller[name="some-controller"]')
 
-app.controller('some', ({ rootElement }) => {
+app.controller('some-controller', ({ rootElement }) => {
     expect(rootElement).toBe(customElement)
 })
 ```
@@ -303,9 +301,9 @@ app.controller('some', ({ rootElement }) => {
 #### `.$scope(hydrationScope)`
 This accepts an object that will be exposed when hydrating your HTML. You can call it as many times as you need, as it will be performing a merge under the hood:
 ```html
-<hydratable-controller>
+<x-controller name="hydratable">
     <x-on :click="logToConsole, alertHiOnce"></x-on>
-</hydratable-controller>
+</x-controller>
 ```
 ```javascript
 const app = new App()
@@ -323,7 +321,7 @@ app.controller('hydratable', ({ $scope }) => {
     })
 })
 
-document.querySelector('hydratable-controller').scope // -> { logToConsole: ..., alertHiOnce: {...}}
+document.querySelector('x-controller[name="hydratable"]').scope // -> { logToConsole: ..., alertHiOnce: {...}}
 ```
 
 > [!TIP]
@@ -343,10 +341,10 @@ document.querySelector('hydratable-controller').scope // -> { logToConsole: ...,
 The `$` helper is a [`Proxy`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) instance that will help you dynamically select any element with a `data-ref` attribute scoped inside the controller element. It will return a `Ref` instance:
 
 ```html
-<app-controller>
+<x-controller name="app">
     <p data-ref="message"></p>
     <button data-ref="btn"></button>
-<app-controller>
+</x-controller>
 ```
 ```javascript
 app.controller('app', ({ $ }) => {
@@ -369,15 +367,15 @@ Equivalent to `querySelector` but implementing cache and scoping inside controll
 
 Example usage:
 ```html
-<app-controller>
+<x-controller name="app">
     <button>I'm scoped to the app controller</button>
     <button>I'm also scoped to the app controller</button>
 
-    <nested-controller>
+    <x-controller name="nested">
         <button>I'm scoped to the nested controller</button>
-    </nested-controller>
+    </x-controller>
 
-</app-controller>
+</x-controller>
 ```
 ```javascript
 const app = new App()
@@ -412,18 +410,18 @@ app.controller('nested', ({ $select }) => {
 Given a regular `querySelector`-purposed string, his method returns the complete query string accounting for nested controllers. Under the hood, this is how the rest of methods achieve encapsulation:
 
 ```html
-<app-controller>
+<x-controller name="app">
     <button>I'm scoped to the app controller</button>
-    <nested-controller>
+    <x-controller name="nested">
         <button>I'm scoped to the nested controller</button>
-    </nested-controller>
-</app-controller>
+    </x-controller>
+</x-controller>
 ```
 ```javascript
 const app = new App()
 
 app.controller('app', ({ $getQueryString }) => {
-    $getQueryString('button') // -> button:not( [data-controller="nested"] * )
+    $getQueryString('button') // -> button:not( x-controller[name="nested"] * )
 })
 
 app.controller('nested', ({ $getQueryString }) => {
@@ -442,9 +440,9 @@ As stated previously, the `$` helper inside the `Context` instance will return i
 It returns the first element matching the accessed name nested inside the controller. Know that, under the hood, it is using the `$select` method, so it will implement a cache mechanism as well. Optionally, you can provide an object with event handlers, attributes and properties that will be automatically assigned to it:
 
 ```html
-<app-controller>
+<x-controller name="app">
     <button data-ref="btn">My button</button>
-</app-controller>
+</x-controller>
 ```
 ```javascript
 const app = new App()
@@ -481,10 +479,10 @@ app.controller('app', ({ $, rootElement }) => {
 It returns an array with all matching HTMLElements. Similarly to the `one` method, this also accepts an object with attributes. In this case its even more useful, since attributes will be applied to all matching refs. You can still manipulate them in a loop if you want.
 
 ```html
-<app-controller>
+<x-controller name="app">
     <button data-ref="btn">I'm scoped to the app controller</button>
     <button data-ref="btn" data-message="hello">I'm also scoped to the app controller</button>
-</app-controller>
+</x-controller>
 ```
 ```javascript
 const app = new App()
@@ -537,7 +535,7 @@ Its mission is to attach event listeners to its target. If not specified otherwi
 You can add as many event names as you want as long as they are provided in the `:<event-name>` format. Every attribute starting with a colon (`:`) will be treated as an event name. It can therefore be used for custom events as well. If you want several handlers for the same event, separate them with commas.
 
 ```html
-<app-controller>
+<x-controller name="app">
     <!-- 
         It targets the app controller and will work only 
         after it enters the viewport.
@@ -556,7 +554,7 @@ You can add as many event names as you want as long as they are provided in the 
             <input type="text" name="name_input" data-ref="nameInput"/>
         </label>
     </form>
-</app-controller>
+</x-controller>
 ```
 ```javascript
 import { App, XOnFactory } from "@timberland/web-controllers"
@@ -581,7 +579,7 @@ It's used to perform effects when the target element enters and exits the DOM. S
 The only two attributes are `:connected` and `:disconnected`. As for the `x-on` element, they will look for the callback to execute in the hydration scope.
 
 ```html
-<app-controller>
+<x-controller name="app">
     <x-init 
         target="img" 
         data-ref="imgInit" 
@@ -594,7 +592,7 @@ The only two attributes are `:connected` and `:disconnected`. As for the `x-on` 
             <x-init :connected="pConnected"></x-init>
         </p>
     </template>
-</app-controller>
+</x-controller>
 
 ```
 ```javascript

@@ -2,7 +2,7 @@ import { App } from "../..";
 import { XInitFactory } from "./x-init";
 
 const template = /*html*/ `
-<app-controller>
+<x-controller name="app">
     <x-init :disconnected="onAppDestroyed"></x-init>
 
     <ul>
@@ -13,7 +13,7 @@ const template = /*html*/ `
             <x-init :disconnected="onItemDestroyed"></x-init>
         </li>
     </ul>
-</app-controller>
+</x-controller>
 `;
 const enteringElement = /*html*/ `
 <span>
@@ -49,7 +49,7 @@ app.controller("entering", ({ rootElement }) => {
 
 app.use(XInitFactory);
 
-const appRoot = document.querySelector("app-controller");
+const appRoot = document.querySelector("x-controller[name=app]");
 
 describe("XInit custom element", () => {
   describe("disconnected callback", () => {

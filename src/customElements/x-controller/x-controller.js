@@ -1,18 +1,18 @@
 import { Context } from "../../context";
 
-export const XControllerFactory = (selector, controllerCallback) => {
+export const XControllerFactory = (appInstance) => {
   return class extends HTMLElement {
     constructor() {
       super();
       this.initialized = false;
-      this.dataset.controller = selector;
       this.queue = new Set();
+      this.name = this.getAttribute("name");
     }
 
     init = () => {
       if (this.initialized) return;
       const currentContext = new Context(this);
-      const scope = controllerCallback(currentContext);
+      const scope = appInstance.registry[this.name]?.(currentContext);
       if (scope) {
         currentContext.$scope(scope);
       }

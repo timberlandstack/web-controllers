@@ -7,8 +7,7 @@ export class Context {
 
   constructor(rootElement) {
     this.rootElement = rootElement;
-    this.#nestedController =
-      this.rootElement.querySelector("[data-controller]");
+    this.#nestedController = this.rootElement.querySelector("x-controller");
   }
 
   $scope = (hydrationScope) => {
@@ -50,9 +49,9 @@ export class Context {
   $getQueryString = (selector) => {
     let queryString = selector;
     if (this.#nestedController) {
-      queryString += `:not( [data-controller="${
-        this.#nestedController.dataset?.controller
-      }"] * )`;
+      queryString += `:not( x-controller[name="${this.#nestedController.getAttribute(
+        "name"
+      )}"] * )`;
     }
     return queryString;
   };
