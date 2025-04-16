@@ -14,7 +14,7 @@ export const BaseComponent = (appInstance) =>
         ? this.closestController.$[this.targetName].reset().one()
         : this.parentElement;
 
-      this.namespace = this.target.dataset?.scope;
+      this.namespace = this.target?.dataset?.scope;
     }
 
     init = () => {
@@ -24,8 +24,10 @@ export const BaseComponent = (appInstance) =>
 
     connectedCallback() {
       this.closestController = this.closest("x-controller");
-      if (!this.closestController.initialized)
+      if (!this.closestController.initialized) {
         this.closestController.queue.add(this.init);
+        return;
+      }
 
       if (!this.isLazy) this.init();
     }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .section {
+            height: 110vh;
+            display: flex;
+            align-items: center;
+        }
+        x-controller[name="main"] {
+            padding: 2rem;
+            align-items: center;
+            display: block;
+
+            button,
+            h2 {
+                width: fit-content;
+                margin: 0 auto;
+                display: block;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <h1>Scroll to initialize the controller (open the console)</h1>
+    </div>
+    <x-controller name="main" lazy>
+        <h2>App <span data-ref="counter">0</span></h2>
+        <button>
+            <x-on :click="increment"></x-on>
+            Inc
+        </button>
+    </x-controller>
+
+    <script type="module">
+        import { App, XOnFactory } from "../dist/web-controllers.esm.js"
+        const app = new App()
+
+        app.controller('main', ({ $ }) => {
+            console.log('Running now!')
+            let count = 0
+
+            return {
+                increment: () => $.counter.one({ textContent: ++count })
+            }
+            
+        })
+
+        app.use(XOnFactory)
+    </script>
+</body>
+</html>
