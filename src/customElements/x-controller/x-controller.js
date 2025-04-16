@@ -32,7 +32,11 @@ export const XControllerFactory = (appInstance) => {
     };
 
     connectedCallback() {
-      if (!this.hasAttribute("lazy")) this.init();
+      if (this.hasAttribute("lazy")) {
+        appInstance.observe(this);
+        return;
+      }
+      this.init();
     }
     disconnectedCallback() {
       this.disconnected?.(this);
