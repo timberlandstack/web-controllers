@@ -1,11 +1,13 @@
 {
   "name": "@timberland/web-controllers",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "license": "MIT",
   "main": "src/index.js",
   "author": "Álvaro Palma Mancheño",
-  "keywords": ["web components"],
+  "keywords": [
+    "web components"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/timberlandstack/web-controllers.git"
@@ -29,7 +31,13 @@
     "jsdom": "^26.0.0",
     "vitest": "^3.0.9"
   },
-  "files": ["src/", "README.md", "dist/", "!src/__tests__/", "!**/*.test.js"],
+  "files": [
+    "src/",
+    "README.md",
+    "dist/",
+    "!src/__tests__/",
+    "!**/*.test.js"
+  ],
   "publishConfig": {
     "access": "public"
   },
