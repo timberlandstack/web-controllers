@@ -1,10 +1,14 @@
 export const resolveProperty = ({ propertyName, context, namespace }) => {
   if (!context || !propertyName) return;
-  if (namespace) propertyName = `${namespace}.${propertyName}`;
+  if (namespace && !propertyName.startsWith("context#"))
+    propertyName = `${namespace}.${propertyName}`;
 
-  const resolvedValue = propertyName.split(".").reduce((acc, current) => {
-    return acc[current];
-  }, context);
+  const resolvedValue = propertyName
+    .replace("context#", "")
+    .split(".")
+    .reduce((acc, current) => {
+      return acc[current];
+    }, context);
 
   return resolvedValue;
 };
@@ -24,11 +28,12 @@ const unpackMethods = (methodsArray, context, namespace) => {
       context,
       namespace,
     });
-    if (
-      typeof method === "function" ||
-      typeof method?.handleEvent === "function"
-    ) {
+    if (typeof method?.handleEvent === "function") {
+      method.handleEvent = method.handleEvent.bind(context);
       return method;
+    }
+    if (typeof method === "function") {
+      return method.bind(context);
     }
   });
 };

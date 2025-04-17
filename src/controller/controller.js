@@ -1,18 +1,18 @@
 import { Ref } from "../ref";
 
-export class Context {
+export class Controller {
   elementsCache = new Map();
-  scope = null;
   #nestedController = null;
+  _namespaces = {};
 
   constructor(rootElement) {
     this.rootElement = rootElement;
-    this.#nestedController = this.rootElement.querySelector("x-controller");
+    this.#nestedController =
+      this.rootElement.querySelector("[data-controller]");
   }
 
-  $scope = (hydrationScope) => {
-    if (!this.scope) this.scope = {};
-    Object.assign(this.scope, hydrationScope);
+  $mount = (namespace, componentCallback) => {
+    this[namespace] = componentCallback(this);
   };
 
   $ = new Proxy(
@@ -49,8 +49,8 @@ export class Context {
   $getQueryString = (selector) => {
     let queryString = selector;
     if (this.#nestedController) {
-      queryString += `:not( x-controller[name="${this.#nestedController.getAttribute(
-        "name"
+      queryString += `:not( [data-controller="${this.#nestedController.getAttribute(
+        "data-controller"
       )}"] * )`;
     }
     return queryString;

@@ -55,6 +55,23 @@ describe("App utils", () => {
       expect(value).toBe(true);
     });
 
+    it("should ignore the namespace if the property starts with 'context#'", () => {
+      const propertyName = "context#hello.world.nested";
+      const mockContext = {
+        hello: {
+          world: {
+            nested: true,
+          },
+        },
+      };
+      const value = resolveProperty({
+        propertyName,
+        context: mockContext,
+        namespace: "hello",
+      });
+      expect(value).toBe(true);
+    });
+
     it("should work with nested namespaces", () => {
       const propertyName = "nested";
       const mockContext = {

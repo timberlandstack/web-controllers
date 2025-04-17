@@ -1,6 +1,6 @@
 import { Ref } from "./ref";
-import { Context } from "./context";
-import { App } from "./app";
+import { Application } from "./app";
+import { Controller } from "./controller/controller";
 
-export { Ref, Context, App };
-export { XInitFactory, XOnFactory } from "./customElements";
+export { Ref, Application, Controller };
+export { XInit, XOn } from "./customElements";

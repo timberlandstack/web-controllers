@@ -1,8 +1,10 @@
-import { App } from "../..";
-import { XInitFactory } from "./x-init";
+import { selectController } from "../../../test_mocks/helpers";
+import { Application } from "../../app";
+import { Controller } from "../../controller/controller";
+import { XInit } from "./x-init";
 
 const template = /*html*/ `
-<x-controller name="app">
+<div data-controller="app">
     <x-init :disconnected="onAppDestroyed"></x-init>
 
     <ul>
@@ -13,12 +15,7 @@ const template = /*html*/ `
             <x-init :disconnected="onItemDestroyed"></x-init>
         </li>
     </ul>
-</x-controller>
-`;
-const enteringElement = /*html*/ `
-<span>
-    <x-init :connected="onSpanAdded"></x-init>
-</span>
+</div>
 `;
 
 const enteringVoidElement = /*html*/ `
@@ -30,26 +27,24 @@ document.body.innerHTML = template;
 
 let isDestroyed = false;
 const deletedItems = [];
-const app = new App();
-app.controller("app", () => {
-  return {
-    onSpanAdded: (el) => {
+
+Application.controller(
+  "app",
+  class extends Controller {
+    onSpanAdded(el) {
       el.dataset.text = "I'm a span";
-    },
-    inputEntered: (el) => {
+    }
+    inputEntered(el) {
       el.dataset.text = "I'm an input";
-    },
-    onAppDestroyed: () => (isDestroyed = true),
-    onItemDestroyed: (item) => deletedItems.push(item),
-  };
-});
-app.controller("entering", ({ rootElement }) => {
-  rootElement.dataset.text = "I'm a button";
-});
+    }
+    onAppDestroyed = () => (isDestroyed = true);
+    onItemDestroyed = (item) => deletedItems.push(item);
+  }
+);
 
-app.use(XInitFactory);
+Application.use(XInit);
 
-const appRoot = document.querySelector("x-controller[name=app]");
+const appRoot = selectController("app");
 
 describe("XInit custom element", () => {
   describe("disconnected callback", () => {

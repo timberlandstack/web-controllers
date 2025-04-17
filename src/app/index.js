@@ -1,45 +1,55 @@
-import { XControllerFactory } from "../customElements/x-controller/x-controller";
-
-export class App {
-  registry = {};
-  observer = null;
-
-  constructor() {
-    setTimeout(() => {
-      if (!customElements.get("x-controller"))
-        customElements.define("x-controller", XControllerFactory(this));
-    });
-  }
+export const Application = {
+  controllers: {},
+  registry: new WeakMap(),
+  elementsQueue: new WeakMap(),
+  observer: null,
 
   observe(htmlElement) {
-    this.observer ??= new IntersectionObserver((entries) => {
+    Application.observer ??= new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting)
-          entry.target.init() && this.observer.unobserve(htmlElement);
+          Application.initializeController(entry.target) &&
+            Application.observer.unobserve(entry.target);
       });
     });
-    this.observer.observe(htmlElement);
-  }
+    Application.observer.observe(htmlElement);
+  },
 
-  controller(selector, controllerCallback) {
-    if (this.registry[selector]) {
-      console.error(`${selector} controller has already been registered`);
+  controller(selector, controller) {
+    Application.controllers[selector] = controller;
+    document
+      .querySelectorAll(`[data-controller="${selector}"]`)
+      .forEach((element) => {
+        Application.initializeController(element);
+      });
+  },
+
+  initializeController(htmlElement) {
+    if (Application.registry.has(htmlElement)) return;
+    if (
+      htmlElement.dataset?.load === "visible" &&
+      !Application.elementsQueue.has(htmlElement)
+    ) {
+      Application.observe(htmlElement);
+      Application.elementsQueue.set(htmlElement, new Set());
       return;
-    }
+    } // observe it
 
-    this.registry[selector] = controllerCallback;
-  }
+    const controllerName = htmlElement.dataset?.controller;
+    const controller = Application.controllers[controllerName];
+    const controllerInstance = new controller(htmlElement);
+    const cleanup = controllerInstance.$connected?.();
+    if (typeof cleanup === "function")
+      controllerInstance.$disconnected = cleanup;
+    Application.registry.set(htmlElement, controllerInstance);
+    Application.elementsQueue.get(htmlElement)?.forEach((cb) => cb());
+    Application.elementsQueue.delete(htmlElement);
+  },
 
   use(...customElementsFactories) {
-    setTimeout(() => {
-      customElementsFactories.forEach((factory) => {
-        const customElement = factory(this);
-        if (
-          customElement.selector &&
-          !customElements.get(customElement.selector)
-        )
-          customElements.define(customElement.selector, customElement);
-      });
+    customElementsFactories.forEach((element) => {
+      if (element.selector && !customElements.get(element.selector))
+        customElements.define(element.selector, element);
     });
-  }
-}
+  },
+};

@@ -1,69 +1,68 @@
-import { App } from "../../app";
+import { selectController } from "../../../test_mocks/helpers";
+import { Application } from "../../app";
+import { Controller } from "../../controller/controller";
 import { BaseComponent } from "./base-component";
 
 document.body.innerHTML = /*html*/ `
-    <x-controller name="app">
-      <x-test></x-test>
-
-      <x-controller name="nested">
+    <div data-controller="app">
         <x-test></x-test>
-      </x-controller>
 
-      <x-test target="input"></x-test>
-      <input type="text" data-ref="input" data-scope="inputComponent">
-    </x-controller>
+        <div data-controller="nested">
+          <x-test></x-test>
+        </div>
 
-    <x-controller name="lazy" lazy>
-      <x-test lazy></x-test>
-    </x-controller>
+        <x-test target="input"></x-test>
+        <input type="text" data-ref="input" data-namespace="inputComponent">
+    </div>
+
+    <div data-controller="lazy" data-load="visible">
+        <x-test></x-test>
+    </div>
 `;
 
-const TestFactory = (appInstance) =>
-  class Test extends BaseComponent(appInstance) {
-    static selector = "x-test";
+class Test extends BaseComponent {
+  static selector = "x-test";
 
-    onConnected() {
-      this.textContent = "I'm initialized!";
-    }
-  };
+  onConnected() {
+    this.textContent = "I'm initialized!";
+  }
+}
 
-const app = new App();
+Application.controller("app", class extends Controller {});
 
-app.controller("app", () => {
-  return {};
-});
+Application.controller("nested", class extends Controller {});
 
-app.controller("nested", () => {
-  return {};
-});
+Application.controller(
+  "entry-later",
+  class extends Controller {
+    $connected() {}
+  }
+);
 
-app.controller("lazy", () => ({
-  someValue: "hi",
-}));
+Application.controller(
+  "lazy",
+  class extends Controller {
+    someValue = "hi";
+  }
+);
 
-app.use(TestFactory);
+Application.use(Test);
 
-const appController = document.querySelector("x-controller[name=app]");
+const appController = selectController("app");
 const app_x_test = appController.querySelector("x-test");
 
-const nestedController = appController.querySelector(
-  "x-controller[name=nested]"
-);
+const nestedController = selectController("nested");
 const nested_x_test = nestedController.querySelector("x-test");
 
 const inputComponent = appController.querySelector('input[data-ref="input"]');
 const target_x_test = appController.querySelector('x-test[target="input"]');
 
-const lazyController = document.querySelector("x-controller[name=lazy]");
-const lazy_x_test = document.querySelector("x-test[lazy]");
+const lazyController = selectController("lazy");
+const lazy_x_test = lazyController.querySelector("x-test");
 
 describe("BaseComponent properties", () => {
   it("should have a display none style attribute", () => {
     expect(app_x_test.style.display).toBe("none");
-  });
-  it("should have an appInstance property", () => {
-    expect(app_x_test.appInstance).toBeDefined();
-    expect(app_x_test.appInstance).toBe(app);
   });
   it("should correctly get the closest controller", () => {
     expect(app_x_test.closestController).toBe(appController);
@@ -75,24 +74,35 @@ describe("BaseComponent properties", () => {
     expect(nested_x_test.target).toBe(nestedController);
     expect(target_x_test.target).toBe(inputComponent);
   });
-  it("should have a namespace if the target has a data-scope attribute", () => {
+  it("should have a namespace if the target has a data-namespace attribute", () => {
     expect(app_x_test.namespace).toBeUndefined();
     expect(target_x_test.namespace).toBe("inputComponent");
+  });
+
+  it("should initialize the closest controller when entering the DOM", () => {
+    const partial = /*html*/ `
+      <div data-controller="entry-later">
+        <x-test></x-test>
+      </div>
+     `;
+    document.body.insertAdjacentHTML("beforeend", partial);
+    const entryLaterController = selectController("entry-later");
+    expect(Application.registry.has(entryLaterController)).toBe(true);
   });
 });
 
 describe("Lazy initialization", () => {
   it("should enqueue its init method if the controller hasn't been initialized  ", () => {
-    expect(lazyController.initialized).toBe(false);
-    expect(lazyController.queue.has(lazy_x_test.init)).toBe(true);
-    expect(lazy_x_test.closestController.scope).toBeUndefined();
+    expect(Application.registry.has(lazyController)).toBe(false);
+    expect(
+      Application.elementsQueue.get(lazyController).has(lazy_x_test.init)
+    ).toBe(true);
     expect(lazy_x_test.textContent).toBe("");
   });
   it("should be initialized after his corresponding controller", () => {
-    lazyController.init();
+    Application.initializeController(lazyController);
 
-    expect(lazyController.initialized).toBe(true);
-    expect(lazy_x_test.closestController.scope).toEqual({ someValue: "hi" });
+    expect(lazy_x_test.context.someValue).toEqual("hi");
     expect(lazy_x_test.textContent).toBe("I'm initialized!");
   });
 });
