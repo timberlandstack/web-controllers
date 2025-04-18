@@ -4,10 +4,11 @@ export class Controller {
   elementsCache = new Map();
   #nestedController = null;
 
-  constructor(rootElement) {
+  constructor(rootElement, values) {
     this.rootElement = rootElement;
     this.#nestedController =
       this.rootElement.querySelector("[data-controller]");
+    this.values = values;
   }
 
   $mount = (namespace, componentCallback) => {

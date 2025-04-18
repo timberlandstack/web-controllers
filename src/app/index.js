@@ -39,9 +39,9 @@ export const Application = {
 
     const controllerName = htmlElement.dataset?.controller;
     const controller = Application.controllers[controllerName];
+    const values = setValues({ htmlElement, controller });
+    const controllerInstance = new controller(htmlElement, values);
 
-    const controllerInstance = new controller(htmlElement);
-    setValues({ htmlElement, controller, controllerInstance });
     const cleanup = controllerInstance.$connected?.();
     if (typeof cleanup === "function")
       controllerInstance.$disconnected = cleanup;

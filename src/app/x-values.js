@@ -1,4 +1,4 @@
-export const setValues = ({ htmlElement, controller, controllerInstance }) => {
+export const setValues = ({ htmlElement, controller }) => {
   if (!controller.values) return;
   const controllerName = htmlElement.dataset.controller;
 
@@ -25,7 +25,7 @@ export const setValues = ({ htmlElement, controller, controllerInstance }) => {
     }, {});
   };
 
-  controllerInstance.values = new Proxy(getInstanceValues(htmlElement), {
+  return new Proxy(getInstanceValues(htmlElement), {
     get: (target, property) => {
       return target[property];
     },
