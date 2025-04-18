@@ -10,7 +10,7 @@
             display: flex;
             align-items: center;
         }
-        x-controller[name="main"] {
+        [data-controller] {
             padding: 2rem;
             align-items: center;
             display: block;
@@ -29,29 +29,34 @@
     <div class="section">
         <h1>Scroll to initialize the controller (open the console)</h1>
     </div>
-    <x-controller name="main" lazy>
-        <h2>App <span data-ref="counter">0</span></h2>
+    <div data-controller="main" data-load="visible">
+        <h2>Count: <span data-ref="counter">0</span></h2>
         <button>
             <x-on :click="increment"></x-on>
             Inc
         </button>
-    </x-controller>
+    </div>
+
 
     <script type="module">
-        import { App, XOnFactory } from "../dist/web-controllers.esm.js"
-        const app = new App()
+        import { Application, XOn, Controller } from "../dist/web-controllers.esm.js"
 
-        app.controller('main', ({ $ }) => {
-            console.log('Running now!')
-            let count = 0
+        class MainController extends Controller {
+            count = 0
 
-            return {
-                increment: () => $.counter.one({ textContent: ++count })
+            $connected() {
+                console.log("Running now!")
             }
             
-        })
+            increment() {
+                this.count++
+                this.$.counter.one({ textContent: this.count })
+            }
+        }
 
-        app.use(XOnFactory)
+        Application.controller('main', MainController)
+
+        Application.use(XOn)
     </script>
 </body>
 </html>
