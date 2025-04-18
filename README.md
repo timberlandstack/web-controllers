@@ -2,10 +2,11 @@
 The `web-controllers` package aims at being a more modern, lightweight and modular approach to alternatives like [Alpine](https://github.com/alpinejs/alpine) and [Stimulus](https://github.com/hotwired/stimulus), while leveraging a unique use for web components.
 
 Some key features:
+- Group your logic specific for any piece of HTML into a `Controller` class, exposing methods to be used for hydration
 - Utility Web Components (more specifically, `CustomElements` API) for having a declarative experience in your HTML, like automatically initializing elements, handling lifecycle events and attaching event listeners.
 - Easily select and hydrate elements inside and scoped to the controller.
 - Execute your declarative code lazily for better performance and as a more declarative replacement for the `IntersectionObserver` (which is used behind the scenes)
-- Very small bundle size: **1.5kb** minified + gzipped, but can be stripped down if you don't want to use the built-in custom elements.
+- Very small bundle size: **1.7kb** minified + gzipped, but can be stripped down if you don't want to use the built-in custom elements.
 > [!NOTE]
 > The API is still under active development. While it is very usable, breaking changes may come, so use it at your own risk.
 
@@ -56,14 +57,14 @@ import { App } from '@timberland/web-controllers'
 ```html
 <!-- ESM -->
 <script type="module">
-    import { App } from "https://unpkg.com/@timberland/web-controllers/dist/web-controllers.esm.js"
+    import { Application } from "https://unpkg.com/@timberland/web-controllers/dist/web-controllers.esm.js"
 </script>
 
 <!-- IIFE -->
 <script src="https://unpkg.com/@timberland/web-controllers/dist/web-controllers.iife.js"></script>
 <script>
     // Stored under the WebControllers name so we don't pollute the global scope
-    const { App } = window.WebControllers 
+    const { Application } = window.WebControllers 
 </script>
 ```
 > [!CAUTION] 
@@ -76,36 +77,31 @@ import { App } from '@timberland/web-controllers'
 
 ## Example usage
 ```html
-<x-controller name="app">
+<article data-controller="main">
     <p data-ref="message">No one said hi...</p>
 
     <button>
         <x-on :click="sayHi"></x-on>
         Click me!
     </button>
-
-    <!-- If we prefer to just select the button instead of using the x-on component -->
-    <!-- <button data-ref="actionBtn">Click me!</button> -->
-</x-controller>
+</article>
 ```
 ```javascript
-import { App, XOnFactory } from "@timberland/web-controllers"
-const app = new App()
+import { Application, Controller, XOn } from "@timberland/web-controllers"
 
-app.controller('app', (ctx) => {
-    const { $ } = ctx
-    const sayHi = () => $.message.one({ textContent: 'Hi there!' })
-    // Optionally: if selecting and hydrating by hand
-    // $.actionBtn.one({ onclick: sayHi })
+class Main extends Controller {
+    sayHi() {
+        this.$.message.one({ textContent: 'Hi there!' })
+    }
+}
 
-    return { sayHi }
-})
+Application.controller('main', Main)
 
-app.use(XOnFactory)
+Application.use(XOn)
 ```
 Brief explanation: 
-1. We are creating an instance of the `App` class.
-2. We are registering a controller, in which we are receiving a `Context` as the only argument, and using one of its helpers to select and manipulate an existing HTML Element (with the `$` proxy). This controller will be usable in the DOM with the `x-controller` custom element and adding its name attribute pointing to a registered controller.
+1. We are creating a class that extends the `Controller` base class. We are declaring a method and using one of its helpers to select and manipulate an existing HTML Element (with the `$` proxy).
+2. We are registering the controller in the `Application` with the name of `main`. This controller will be automatically instantiated for every `data-controller="main"` element in the DOM.
 3. We are returning an object from the controller. This object will be the scope in which the custom element will look for the specified methods. Mind that there is no evaluation whatsoever here, it's just mere string lookup in the returned object. This is completely optional, as we could simply select and hydrate the button by hand, as illustrated in the commented code.
 4. We are nesting an `x-on` custom element inside the button. This will:
     1. Find it closest `x-controller` element.

@@ -53,3 +53,16 @@ export const attachEvents = ({ customElement, target }, context) => {
     });
   });
 };
+
+export const jsonParse = (...values) => {
+  return values.reduce((acc, current) => {
+    let currentValue;
+    try {
+      currentValue = JSON.parse(current);
+    } catch (_) {
+      currentValue = current;
+    }
+    acc.push(currentValue);
+    return acc;
+  }, []);
+};

@@ -3,7 +3,6 @@ import { Ref } from "../ref";
 export class Controller {
   elementsCache = new Map();
   #nestedController = null;
-  _namespaces = {};
 
   constructor(rootElement) {
     this.rootElement = rootElement;
@@ -26,7 +25,6 @@ export class Controller {
         return target[prop];
       },
       set: () => {
-        console.error("Cannot manually set properties on the $ object");
         return false;
       },
     }

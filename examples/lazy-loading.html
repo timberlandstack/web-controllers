@@ -13,7 +13,6 @@
         [data-controller] {
             padding: 2rem;
             align-items: center;
-            display: block;
 
             button,
             h2 {
@@ -29,7 +28,7 @@
     <div class="section">
         <h1>Scroll to initialize the controller (open the console)</h1>
     </div>
-    <div data-controller="main" data-load="visible">
+    <div data-controller="main" data-load="visible" data-count="1">
         <h2>Count: <span data-ref="counter">0</span></h2>
         <button>
             <x-on :click="increment"></x-on>
@@ -42,15 +41,22 @@
         import { Application, XOn, Controller } from "../dist/web-controllers.esm.js"
 
         class MainController extends Controller {
-            count = 0
+            static values = { 
+                count: { 
+                    transformer: Number,
+                    default: 22
+                }
+            }
 
             $connected() {
                 console.log("Running now!")
+                this.rootElement.addEventListener('main.count', ({ detail }) => {
+                    this.$.counter.one({ textContent: detail })
+                })
             }
-            
+        
             increment() {
-                this.count++
-                this.$.counter.one({ textContent: this.count })
+                this.values.count++
             }
         }
 
