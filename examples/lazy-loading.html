@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
             display: flex;
             align-items: center;
         }
+
         [data-controller] {
             padding: 2rem;
             align-items: center;
@@ -24,6 +26,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="section">
         <h1>Scroll to initialize the controller (open the console)</h1>
@@ -38,25 +41,26 @@
 
 
     <script type="module">
-        import { Application, XOn, Controller } from "../dist/web-controllers.esm.js"
+        import { Application, XOn, Controller, Emitter } from "../dist/web-controllers.esm.js"
 
         class MainController extends Controller {
-            static values = { 
-                count: { 
-                    transformer: Number,
-                    default: 22
+            static values = {
+                count: {
+                    transformer: (val) => new Emitter(+val),
+                    default: new Emitter(22)
                 }
             }
 
             $connected() {
                 console.log("Running now!")
-                this.rootElement.addEventListener('main.count', ({ detail }) => {
-                    this.$.counter.one({ textContent: detail })
-                })
+                this.values.count.subscribe(
+                    (val) => this.$.counter.one({ textContent: val }),
+                    { lazy: false })
             }
-        
+
             increment() {
-                this.values.count++
+                const { count } = this.values
+                count.next(count.value + 1)
             }
         }
 
@@ -65,4 +69,5 @@
         Application.use(XOn)
     </script>
 </body>
+
 </html>
