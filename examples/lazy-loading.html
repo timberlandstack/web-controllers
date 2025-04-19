@@ -78,7 +78,7 @@
         </div>
     </div>
     <div class="section">
-        <div data-controller="main" data-load="lazy" data-count="1">
+        <div data-controller="main" data-load="lazy" data-count-value="1">
             <h2><code>data-load="lazy"</code> (triggered as soon as one pixel is in viewport)</h2>
 
             <h2>Count in HTML: <code>0</code></h2>
@@ -93,7 +93,7 @@
 
 
     <script type="module">
-        import { XOn, defineController, Emitter, values, useElements, ref } from "../dist/web-controllers.esm.js";
+        import { XOn, defineController, Emitter, values, useElements, ref } from "../dist/bundled/web-controllers.esm.js";
 
         const MainValues = {
             count: {

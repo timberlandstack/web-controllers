@@ -65,7 +65,7 @@ export const values = ({ rootElement, valuesSchema }) => {
   if (!valuesSchema) return;
 
   return Object.entries(valuesSchema).reduce((acc, [key, value]) => {
-    const attributeValue = rootElement.dataset[key];
+    const attributeValue = rootElement.dataset[`${key}Value`];
 
     acc[key] = attributeValue
       ? value.transformer?.(attributeValue)

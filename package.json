@@ -4,6 +4,11 @@
   "type": "module",
   "license": "MIT",
   "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./elements": "./src/customElements/index.js",
+    "./helpers": "./src/helpers/index.js"
+  },
   "author": "Álvaro Palma Mancheño",
   "keywords": [
     "web components"

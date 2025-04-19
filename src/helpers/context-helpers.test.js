@@ -3,7 +3,7 @@ import { selectController } from "../../test_mocks/helpers";
 import { defineController, defineGlobals, registry } from "../app";
 
 const partial = /*html*/ `
-<div data-controller="main" data-date="10/10/1995" data-some-value="hello">
+<div data-controller="main" data-date-value="10/10/1995" data-some-value="hello">
     <!-- this should be selected from app context -->
     <button data-ref="btn">
         Inc
@@ -40,7 +40,7 @@ const MainValues = {
     transformer: (val) => new Date(val),
     default: new Date("1/1/2025"),
   },
-  someValue: {
+  some: {
     transformer: String,
     default: "no message :(",
   },
@@ -163,7 +163,7 @@ describe("Context helpers", () => {
     const mainInstance = registry.get(mainController);
 
     it("should return the values as provided in the schema", () => {
-      expect(mainInstance.values.someValue).toBe("hello");
+      expect(mainInstance.values.some).toBe("hello");
     });
 
     it("should assign the default value if no attributes have been provided", () => {
