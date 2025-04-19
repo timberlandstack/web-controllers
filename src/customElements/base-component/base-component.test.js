@@ -42,9 +42,7 @@ defineController("nested", {
 });
 defineController("entry-later", {
   controller: (ctx) => {
-    ctx.$connected = () => {
-      console.log("HELLO");
-    };
+    ctx.$connected = () => {};
   },
 });
 defineController("lazy", {

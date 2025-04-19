@@ -2,6 +2,11 @@ export const controllers = {};
 export const registry = new WeakMap();
 export const elementsQueue = new WeakMap();
 export let observer = null;
+const globalHelpers = [];
+
+export const defineGlobals = ({ helpers }) => {
+  globalHelpers.push(...helpers);
+};
 
 export const observers = {
   lazy: null,
@@ -30,11 +35,12 @@ export const initializeController = (htmlElement) => {
     use: (...helpers) => {
       helpers.forEach(
         (helper) =>
-          (currentContext[helper.alias ?? helper.fn.name] =
+          (currentContext[helper.alias ?? helper.fn.name] ??=
             helper.fn(currentContext))
       );
     },
   };
+  if (globalHelpers.length) currentContext.use(...globalHelpers);
 
   // Just in case we want to manipulate the scope from the controller
   Object.assign(currentContext.scope, callback(currentContext) ?? {});
@@ -51,9 +57,20 @@ export const observe = (htmlElement) => {
   observers[type] ??= new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        initializeController(entry.target);
-        if (!htmlElement.hasAttribute("data-repeat"))
+        if (!entry.isIntersecting && !registry.has(entry.target)) return;
+
+        if (!entry.isIntersecting && registry.has(entry.target)) {
+          registry.get(entry.target).$offViewport?.();
+        }
+
+        if (entry.isIntersecting && !registry.has(entry.target)) {
+          initializeController(entry.target);
+          registry.get(entry.target).$inViewport?.();
+        }
+        if (entry.isIntersecting && registry.has(entry.target)) {
+          registry.get(entry.target).$inViewport?.();
+        }
+        if (!entry.target.hasAttribute("data-load-repeat"))
           observers[type].unobserve(entry.target);
       });
     },

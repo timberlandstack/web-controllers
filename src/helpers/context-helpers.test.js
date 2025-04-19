@@ -1,6 +1,6 @@
 import { getQueryString, ref, select, mount, values } from ".";
 import { selectController } from "../../test_mocks/helpers";
-import { defineController, registry } from "../app";
+import { defineController, defineGlobals, registry } from "../app";
 
 const partial = /*html*/ `
 <div data-controller="main" data-date="10/10/1995" data-some-value="hello">
@@ -23,17 +23,13 @@ const partial = /*html*/ `
 `;
 document.body.innerHTML = partial;
 
-const returnHelpers = (ctx) => {
-  ctx.use(
+defineGlobals({
+  helpers: [
     { fn: getQueryString, alias: "$getQueryString" },
     { fn: select, alias: "$select" },
     { fn: ref, alias: "$" },
-    { fn: mount, alias: "$mount" },
-    { fn: values }
-  );
-
-  return {};
-};
+  ],
+});
 
 const MainValues = {
   count: {
@@ -52,10 +48,12 @@ const MainValues = {
 
 defineController("main", {
   values: MainValues,
-  controller: returnHelpers,
+  controller: (ctx) => {
+    ctx.use({ fn: mount, alias: "$mount" }, { fn: values });
+  },
 });
 defineController("inner", {
-  controller: returnHelpers,
+  controller: () => {},
 });
 
 const mainController = selectController("main");

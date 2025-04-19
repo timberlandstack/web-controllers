@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+        html {
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
         .section {
             height: 100vh;
             display: flex;
@@ -55,7 +59,7 @@
     </div>
    <div class="section">
         <div data-controller="lazy-img" data-load="visible" class="img-controller">
-            <h2><code>data-load="visible"</code> (triggered when its fully in viewport)</h2>
+            <h2><code>data-load="visible"</code> (triggered once when its fully in viewport, then its unobserved)</h2>
             <img 
                 src="https://picsum.photos/200/300" 
                 alt="Random and meaningless picture from lorem picsum"
@@ -63,6 +67,16 @@
                 class="hidden" />
         </div>
    </div>
+   <div class="section">
+    <div data-controller="lazy-img" data-load="visible" data-load-repeat class="img-controller">
+            <h2><code>data-load="visible"</code> and <code>data-load-repeat</code> (triggered when its fully in viewport, its observed when entering and exiting)</h2>
+            <img 
+                src="https://picsum.photos/200/300" 
+                alt="Random and meaningless picture from lorem picsum"
+                aria-hidden="true"
+                class="hidden" />
+        </div>
+    </div>
     <div class="section">
         <div data-controller="main" data-load="lazy" data-count="1">
             <h2><code>data-load="lazy"</code> (triggered as soon as one pixel is in viewport)</h2>
@@ -90,12 +104,11 @@
         const MainController = (ctx) => {
             console.log('Lazy controller running now! (data-load="lazy")')
 
-            const $ = ref(ctx)
-
+            const { counter } = ref(ctx)
             const { count } = values(ctx)
 
             count.subscribe(
-                (val) => $.counter.one({ textContent: val }),
+                (val) => counter.one({ textContent: val }),
                 { lazy: false }
             )
 
@@ -111,10 +124,20 @@
         defineController('lazy-img', {
             controller: (ctx) => {
                 console.log('Lazy controller running now! (data-load="visible")')
-                const img = ctx.rootElement.querySelector('img')
-                img.classList.remove('hidden')
-                img.classList.add('visible')
-                img.setAttribute('aria-hidden', "false")
+        
+                ctx.$inViewport = () => {
+                    const img = ctx.rootElement.querySelector('img')
+                    img.classList.remove('hidden')
+                    img.classList.add('visible')
+                    img.setAttribute('aria-hidden', "false")
+                }
+                ctx.$offViewport = () => {
+                    console.log('data-load="visible" is off-viewport')
+                    const img = ctx.rootElement.querySelector('img')
+                    img.classList.add('hidden')
+                    img.classList.remove('visible')
+                    img.setAttribute('aria-hidden', "true")
+                }
             }
         })
         
