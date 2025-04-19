@@ -1,6 +1,4 @@
-import { Application } from "./app";
-import { Controller } from "./controller/controller";
-
-export { Application, Controller };
-export { XInit, XOn } from "./customElements";
+export { defineController, useElements } from "./app/index.js";
+export { mount, ref, select, getQueryString, values } from "./helpers/index.js";
+export { XInit, XOn } from "./customElements/index.js";
 export { ComputedEmitter, Emitter } from "@timberland/emitters";

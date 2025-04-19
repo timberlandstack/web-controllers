@@ -7,13 +7,15 @@
     <title>Document</title>
     <style>
         .section {
-            height: 110vh;
+            height: 100vh;
             display: flex;
+            justify-content: center;
             align-items: center;
         }
 
         [data-controller] {
             padding: 2rem;
+            justify-content: center;
             align-items: center;
 
             button,
@@ -24,49 +26,99 @@
                 margin-bottom: 1rem;
             }
         }
+
+        .hidden {
+            opacity: 0;
+            transform: translateX(300px);
+        }
+    
+        img {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all .5s;
+
+        }
+
+        .img-controller {
+            width: fit-content;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
     </style>
 </head>
 
 <body>
     <div class="section">
-        <h1>Scroll to initialize the controller (open the console)</h1>
+        <h1>Scroll to initialize the controllers (open the console)</h1>
     </div>
-    <div data-controller="main" data-load="visible" data-count="1">
-        <h2>Count: <span data-ref="counter">0</span></h2>
-        <button>
-            <x-on :click="increment"></x-on>
-            Inc
-        </button>
+   <div class="section">
+        <div data-controller="lazy-img" data-load="visible" class="img-controller">
+            <h2><code>data-load="visible"</code> (triggered when its fully in viewport)</h2>
+            <img 
+                src="https://picsum.photos/200/300" 
+                alt="Random and meaningless picture from lorem picsum"
+                aria-hidden="true"
+                class="hidden" />
+        </div>
+   </div>
+    <div class="section">
+        <div data-controller="main" data-load="lazy" data-count="1">
+            <h2><code>data-load="lazy"</code> (triggered as soon as one pixel is in viewport)</h2>
+
+            <h2>Count in HTML: <code>0</code></h2>
+            <h2>Count set with JavaScript: <code data-ref="counter">0</code></h2>
+
+            <button>
+                <x-on :click="increment"></x-on>
+                Inc
+            </button>
+        </div>
     </div>
 
 
     <script type="module">
-        import { Application, XOn, Controller, Emitter } from "../dist/web-controllers.esm.js"
+        import { XOn, defineController, Emitter, values, useElements, ref } from "../dist/web-controllers.esm.js";
 
-        class MainController extends Controller {
-            static values = {
-                count: {
-                    transformer: (val) => new Emitter(+val),
-                    default: new Emitter(22)
-                }
-            }
-
-            $connected() {
-                console.log("Running now!")
-                this.values.count.subscribe(
-                    (val) => this.$.counter.one({ textContent: val }),
-                    { lazy: false })
-            }
-
-            increment() {
-                const { count } = this.values
-                count.next(count.value + 1)
+        const MainValues = {
+            count: {
+                transformer: (val) => new Emitter(+val),
+                default: new Emitter(22)
             }
         }
+        const MainController = (ctx) => {
+            console.log('Lazy controller running now! (data-load="lazy")')
 
-        Application.controller('main', MainController)
+            const $ = ref(ctx)
 
-        Application.use(XOn)
+            const { count } = values(ctx)
+
+            count.subscribe(
+                (val) => $.counter.one({ textContent: val }),
+                { lazy: false }
+            )
+
+            return {
+                increment: () => count.next(count.value + 1)
+            }
+        }
+        defineController("main", {
+            values: MainValues,
+            controller: MainController
+        })
+
+        defineController('lazy-img', {
+            controller: (ctx) => {
+                console.log('Lazy controller running now! (data-load="visible")')
+                const img = ctx.rootElement.querySelector('img')
+                img.classList.remove('hidden')
+                img.classList.add('visible')
+                img.setAttribute('aria-hidden', "false")
+            }
+        })
+        
+        useElements(XOn)
     </script>
 </body>
 

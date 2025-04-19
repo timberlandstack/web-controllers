@@ -1,6 +1,12 @@
 import { selectController } from "../../../test_mocks/helpers";
-import { Application } from "../../app";
-import { Controller } from "../../controller/controller";
+import {
+  defineController,
+  useElements,
+  registry,
+  initializeController,
+  elementsQueue,
+} from "../../app";
+
 import { BaseComponent } from "./base-component";
 
 document.body.innerHTML = /*html*/ `
@@ -28,25 +34,26 @@ class Test extends BaseComponent {
   }
 }
 
-Application.controller("app", class extends Controller {});
+defineController("app", {
+  controller: () => {},
+});
+defineController("nested", {
+  controller: () => {},
+});
+defineController("entry-later", {
+  controller: (ctx) => {
+    ctx.$connected = () => {
+      console.log("HELLO");
+    };
+  },
+});
+defineController("lazy", {
+  controller: () => {
+    return { someValue: "hi" };
+  },
+});
 
-Application.controller("nested", class extends Controller {});
-
-Application.controller(
-  "entry-later",
-  class extends Controller {
-    $connected() {}
-  }
-);
-
-Application.controller(
-  "lazy",
-  class extends Controller {
-    someValue = "hi";
-  }
-);
-
-Application.use(Test);
+useElements(Test);
 
 const appController = selectController("app");
 const app_x_test = appController.querySelector("x-test");
@@ -87,22 +94,20 @@ describe("BaseComponent properties", () => {
      `;
     document.body.insertAdjacentHTML("beforeend", partial);
     const entryLaterController = selectController("entry-later");
-    expect(Application.registry.has(entryLaterController)).toBe(true);
+    expect(registry.has(entryLaterController)).toBe(true);
   });
 });
 
 describe("Lazy initialization", () => {
   it("should enqueue its init method if the controller hasn't been initialized  ", () => {
-    expect(Application.registry.has(lazyController)).toBe(false);
-    expect(
-      Application.elementsQueue.get(lazyController).has(lazy_x_test.init)
-    ).toBe(true);
+    expect(registry.has(lazyController)).toBe(false);
+    expect(elementsQueue.get(lazyController).has(lazy_x_test.init)).toBe(true);
     expect(lazy_x_test.textContent).toBe("");
   });
   it("should be initialized after his corresponding controller", () => {
-    Application.initializeController(lazyController);
+    initializeController(lazyController);
 
-    expect(lazy_x_test.context.someValue).toEqual("hi");
+    expect(lazy_x_test.context.scope.someValue).toEqual("hi");
     expect(lazy_x_test.textContent).toBe("I'm initialized!");
   });
 });

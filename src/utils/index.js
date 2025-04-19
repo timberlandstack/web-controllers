@@ -1,14 +1,22 @@
+export const mergeNamespace = (context, namespace) => {
+  const { _namespaces: ns } = context;
+  return ns?.[namespace]
+    ? { ...context, [namespace]: ns[namespace] }
+    : { ...context };
+};
+
 export const resolveProperty = ({ propertyName, context, namespace }) => {
-  if (!context || !propertyName) return;
-  if (namespace && !propertyName.startsWith("context#"))
+  const hydrationContext = mergeNamespace(context, namespace);
+  if (!hydrationContext || !propertyName) return;
+  if (namespace && !propertyName.startsWith("controller#"))
     propertyName = `${namespace}.${propertyName}`;
 
   const resolvedValue = propertyName
-    .replace("context#", "")
+    .replace("controller#", "")
     .split(".")
     .reduce((acc, current) => {
       return acc[current];
-    }, context);
+    }, hydrationContext);
 
   return resolvedValue;
 };

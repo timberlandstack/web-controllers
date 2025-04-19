@@ -1,9 +1,9 @@
-import { Application as app } from "../app";
-import { Controller } from "./controller";
+import { getQueryString, ref, select, mount, values } from ".";
 import { selectController } from "../../test_mocks/helpers";
+import { defineController, registry } from "../app";
 
 const partial = /*html*/ `
-<div data-controller="main">
+<div data-controller="main" data-date="10/10/1995" data-some-value="hello">
     <!-- this should be selected from app context -->
     <button data-ref="btn">
         Inc
@@ -23,17 +23,49 @@ const partial = /*html*/ `
 `;
 document.body.innerHTML = partial;
 
-app.controller("main", class extends Controller {});
-app.controller("inner", class extends Controller {});
+const returnHelpers = (ctx) => {
+  ctx.use(
+    { fn: getQueryString, alias: "$getQueryString" },
+    { fn: select, alias: "$select" },
+    { fn: ref, alias: "$" },
+    { fn: mount, alias: "$mount" },
+    { fn: values }
+  );
+
+  return {};
+};
+
+const MainValues = {
+  count: {
+    transformer: Number,
+    default: 0,
+  },
+  date: {
+    transformer: (val) => new Date(val),
+    default: new Date("1/1/2025"),
+  },
+  someValue: {
+    transformer: String,
+    default: "no message :(",
+  },
+};
+
+defineController("main", {
+  values: MainValues,
+  controller: returnHelpers,
+});
+defineController("inner", {
+  controller: returnHelpers,
+});
 
 const mainController = selectController("main");
 const innerController = selectController("inner");
 
-const mainCtx = app.registry.get(mainController);
-const innerCtx = app.registry.get(innerController);
+const mainCtx = registry.get(mainController);
+const innerCtx = registry.get(innerController);
 
-describe("context utilities", () => {
-  describe("getQueryString method", () => {
+describe("Context helpers", () => {
+  describe("getQueryString function", () => {
     it("should return the correct query string", () => {
       expect(mainCtx.$getQueryString("button")).toBe(
         'button:not( [data-controller="inner"] * )'
@@ -42,7 +74,8 @@ describe("context utilities", () => {
       expect(innerCtx.$getQueryString("button")).toBe("button");
     });
   });
-  describe("select method", () => {
+
+  describe("select function", () => {
     it("should select elements only inside scope", () => {
       const foundElements = mainCtx.$select("button", { all: true });
       expect(foundElements.length).toBe(2);
@@ -54,7 +87,7 @@ describe("context utilities", () => {
     });
   });
 
-  describe("refs proxy", () => {
+  describe("refs function", () => {
     it("should select elements with data-ref attribute inside component scope", () => {
       const { $ } = mainCtx;
       expect($.btn.all().length).toBe(2);
@@ -119,12 +152,28 @@ describe("context utilities", () => {
     });
   });
 
-  describe("mount method", () => {
+  describe("mount function", () => {
     it("should assign a return value to a namespace", () => {
       mainCtx.$mount("test", () => ({ count: 0 }));
 
-      expect(mainCtx.test).toBeDefined();
-      expect(mainCtx.test.count).toBe(0);
+      expect(mainCtx.scope._namespaces.test).toBeDefined();
+      expect(mainCtx.scope._namespaces.test.count).toBe(0);
+    });
+  });
+
+  describe("Values from dataset", () => {
+    const mainInstance = registry.get(mainController);
+
+    it("should return the values as provided in the schema", () => {
+      expect(mainInstance.values.someValue).toBe("hello");
+    });
+
+    it("should assign the default value if no attributes have been provided", () => {
+      expect(mainInstance.values.count).toBe(0);
+    });
+
+    it("should correctly transform the values", () => {
+      expect(mainInstance.values.date.getFullYear()).toBe(1995);
     });
   });
 });

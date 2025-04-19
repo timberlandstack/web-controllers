@@ -7,7 +7,7 @@ export class XInit extends BaseComponent {
   resolveMethod(name) {
     return resolveProperty({
       propertyName: this.getAttribute(name) ?? name.replace(":", "$"),
-      context: this.context,
+      context: this.context.scope,
       namespace: this.namespace ?? null,
     });
   }

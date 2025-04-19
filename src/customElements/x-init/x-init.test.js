@@ -1,6 +1,5 @@
 import { selectController } from "../../../test_mocks/helpers";
-import { Application } from "../../app";
-import { Controller } from "../../controller/controller";
+import { defineController, useElements } from "../../app";
 import { XInit } from "./x-init";
 
 const template = /*html*/ `
@@ -28,21 +27,20 @@ document.body.innerHTML = template;
 let isDestroyed = false;
 const deletedItems = [];
 
-Application.controller(
-  "app",
-  class extends Controller {
+defineController("app", {
+  controller: () => ({
     onSpanAdded(el) {
       el.dataset.text = "I'm a span";
-    }
+    },
     inputEntered(el) {
       el.dataset.text = "I'm an input";
-    }
-    onAppDestroyed = () => (isDestroyed = true);
-    onItemDestroyed = (item) => deletedItems.push(item);
-  }
-);
+    },
+    onAppDestroyed: () => (isDestroyed = true),
+    onItemDestroyed: (item) => deletedItems.push(item),
+  }),
+});
 
-Application.use(XInit);
+useElements(XInit);
 
 const appRoot = selectController("app");
 

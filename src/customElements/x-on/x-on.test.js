@@ -1,7 +1,7 @@
-import { Controller } from "../../controller/controller.js";
-import { Application } from "../../app";
 import { XOn } from "./x-on.js";
 import { selectController } from "../../../test_mocks/helpers.js";
+import { defineController, useElements } from "../../app/index.js";
+import { ref } from "../../helpers/index.js";
 
 const partial = /*html*/ `
 <div data-controller="app">
@@ -25,43 +25,45 @@ const partial = /*html*/ `
 
 document.body.innerHTML = partial;
 
-Application.controller(
-  "app",
-  class extends Controller {
-    count = 0;
-    increment() {
-      this.count++;
-      this.$.count.one().textContent = this.count;
-    }
+defineController("app", {
+  controller: (ctx) => {
+    ctx.use({ fn: ref, alias: "$" });
 
-    changeName() {}
-  }
-);
+    let count = 0;
+    return {
+      increment() {
+        count++;
+        ctx.$.count.one().textContent = count;
+      },
+
+      changeName() {},
+    };
+  },
+});
 
 let nestedCount = 0;
 let didRun = false;
 let runOnceCount = 0;
 
-Application.controller(
-  "nested",
-  class extends Controller {
+defineController("nested", {
+  controller: (ctx) => ({
     increment() {
       nestedCount++;
-    }
+    },
     runCb() {
       didRun = true;
-    }
+    },
 
-    runOnce = {
+    runOnce: {
       handleEvent: () => runOnceCount++,
       options: {
         once: true,
       },
-    };
-  }
-);
+    },
+  }),
+});
 
-Application.use(XOn);
+useElements(XOn);
 
 describe("Attaching event listeners", () => {
   const button = document.querySelector("[data-test-id='app-button']");

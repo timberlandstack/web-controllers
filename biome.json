@@ -6,6 +6,7 @@
     "useIgnoreFile": false
   },
   "files": {
+    "include": ["**/*.html"],
     "ignoreUnknown": false,
     "ignore": ["dist/*.js"]
   },

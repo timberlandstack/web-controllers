@@ -1,4 +1,9 @@
-import { Application } from "../../app";
+import {
+  registry,
+  elementsQueue,
+  initializeController,
+} from "../../app/index.js";
+import { getQueryString } from "../../helpers";
 export class BaseComponent extends HTMLElement {
   constructor() {
     super();
@@ -7,11 +12,14 @@ export class BaseComponent extends HTMLElement {
   }
   setupProperties() {
     this.style.display = "none";
-    this.context = Application.registry.get(this.closestController);
+    this.context = registry.get(this.closestController);
+    this._target =
+      this.targetName &&
+      this.context.rootElement.querySelector(
+        getQueryString(this.context)(`[data-ref="${this.targetName}"]`)
+      );
 
-    this.target = this.targetName
-      ? this.context.$[this.targetName].reset().one()
-      : this.parentElement;
+    this.target = this._target ?? this.parentElement;
 
     this.namespace = this.target?.dataset?.namespace;
   }
@@ -24,13 +32,13 @@ export class BaseComponent extends HTMLElement {
   connectedCallback() {
     this.closestController = this.closest("[data-controller]");
     // It hasn't been initialized because it's lazy
-    if (Application.elementsQueue.has(this.closestController)) {
-      Application.elementsQueue.get(this.closestController).add(this.init);
+    if (elementsQueue.has(this.closestController)) {
+      elementsQueue.get(this.closestController).add(this.init);
       return;
     }
     // It hasn't been initialized because it just entered the DOM
-    if (!Application.registry.has(this.closestController)) {
-      Application.initializeController(this.closestController);
+    if (!registry.has(this.closestController)) {
+      initializeController(this.closestController);
     }
 
     this.init();
