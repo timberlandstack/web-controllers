@@ -30,8 +30,6 @@ The API is almost stable, but I cannot guarantee anything until I (or we, if you
     - [`defineController(name, { values, controller })`](#definecontrollername--values-controller-)
     - [`useElements(...elements)`](#useelementselements)
     - [`context`](#context-1)
-    - [`.rootElement`](#rootelement)
-    - [`context`](#context-2)
     - [`defineGlobals(globals)`](#defineglobalsglobals)
   - [Helpers (`@timberland/web-controllers/helpers`)](#helpers-timberlandweb-controllershelpers)
     - [`values(context)`](#valuescontext)
@@ -292,36 +290,6 @@ defineController(/*...*/)
 useElements(XOn, XInit)
 useElements(class MyElement extends HTMLElement {
     static selector = "my-element"
-<<<<<<< HEAD
-})
-```
-<br/>
-
-[Back to Index](#table-of-contents-)
-<br/>
-
-#### `context`
-An object that will be passed as an argument to the controller callback. It is meant to be as slim as possible and then will be populated either by you or by the helper functions. By default, it contains the following properties:
-
-
-```javascript
-const someElement = document.querySelector('#some-element')
-const ctx = new Context(someElement) // you can access all properties and methods exposed by the context instance 
-```
-
-#### `.rootElement`
-The HTML Element passed to the `Context` constructor. When registering a controller, it will be the custom element itself:
-```html
-<x-controller name="some-controller"></x-controller>
-```
-```javascript
-const app = new App()
-const customElement = document.querySelector('x-controller[name="some-controller"]')
-
-app.controller('some-controller', ({ rootElement }) => {
-    expect(rootElement).toBe(customElement)
-=======
->>>>>>> effects
 })
 ```
 <br/>
