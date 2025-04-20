@@ -41,9 +41,7 @@ defineController("nested", {
   controller: () => {},
 });
 defineController("entry-later", {
-  controller: (ctx) => {
-    ctx.$connected = () => {};
-  },
+  controller: () => {},
 });
 defineController("lazy", {
   controller: () => {

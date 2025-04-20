@@ -41,7 +41,8 @@
     "README.md",
     "dist/",
     "!src/__tests__/",
-    "!**/*.test.js"
+    "!**/*.test.js",
+    "!src/_barrel.js"
   ],
   "publishConfig": {
     "access": "public"

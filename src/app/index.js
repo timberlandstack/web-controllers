@@ -19,6 +19,7 @@ export const observers = {
 
 export const initializeController = (htmlElement) => {
   if (registry.has(htmlElement)) return;
+
   if (
     htmlElement.hasAttribute("data-load") &&
     !elementsQueue.has(htmlElement)
@@ -35,7 +36,6 @@ export const initializeController = (htmlElement) => {
     valuesSchema,
     scope: {},
     rootElement: htmlElement,
-    ...appGlobals.helpers,
   };
   for (const helper in appGlobals.helpers) {
     currentContext[helper] = appGlobals.helpers[helper]?.(currentContext);
@@ -44,8 +44,9 @@ export const initializeController = (htmlElement) => {
   // Just in case we want to manipulate the scope from the controller
   Object.assign(currentContext.scope, callback(currentContext) ?? {});
 
-  const cleanup = currentContext.$connected?.();
-  if (typeof cleanup === "function") currentContext.$disconnected = cleanup;
+  const cleanup = currentContext._lifecycleMethods?.connected?.();
+  if (typeof cleanup === "function")
+    currentContext._lifecycleMethods.disconnected = cleanup;
   registry.set(htmlElement, currentContext);
   elementsQueue.get(htmlElement)?.forEach((cb) => cb());
   elementsQueue.delete(htmlElement);
@@ -59,15 +60,15 @@ export const observe = (htmlElement) => {
         if (!entry.isIntersecting && !registry.has(entry.target)) return;
 
         if (!entry.isIntersecting && registry.has(entry.target)) {
-          registry.get(entry.target).$offViewport?.();
+          registry.get(entry.target)._viewportMethods?.offViewport?.();
         }
 
         if (entry.isIntersecting && !registry.has(entry.target)) {
           initializeController(entry.target);
-          registry.get(entry.target).$inViewport?.();
+          registry.get(entry.target)._viewportMethods?.inViewport?.();
         }
         if (entry.isIntersecting && registry.has(entry.target)) {
-          registry.get(entry.target).$inViewport?.();
+          registry.get(entry.target)._viewportMethods?.inViewport?.();
         }
         if (!entry.target.hasAttribute("data-load-repeat"))
           observers[type].unobserve(entry.target);
