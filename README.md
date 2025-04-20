@@ -68,20 +68,15 @@ Export paths are:
 ```html
 <!-- ESM -->
 <script type="module">
-    import { defineController } from "https://unpkg.com/@timberland/web-controllers/dist/bundled/web-controllers.esm.js"
+    import { defineController } from "https://unpkg.com/@timberland/web-controllers/bundled/web-controllers.esm.js"
 </script>
 
 <!-- IIFE -->
-<script src="https://unpkg.com/@timberland/web-controllers/dist/bundled/web-controllers.iife.js"></script>
+<script src="https://unpkg.com/@timberland/web-controllers/dist/web-controllers.iife.js"></script>
 <script>
     // Stored under the WebControllers name so we don't pollute the global scope
-    const { Application } = window.WebControllers 
+    const { defineController } = window.WebControllers 
 </script>
-
-We recommend you use the bundled versions for ease of use. However, if you prefer, you can also find the same equivalents as in the package manager version:
-- [cdn_url/package]/dist/index.[format].js (for the core)
-- [cdn_url/package]/dist/helpers.[format].js (for the helpers)
-- [cdn_url/package]/dist/customElements.[format].js (for the custom elements)
 ```
 > [!CAUTION] 
 > These examples should be used for development only. If you plan to use the CDN for production, pin a specific version. For instance: `https://unpkg.com/@timberland/web-controllers@0.0.10/dist/bundled/web-controllers.esm.js`. Check the releases section for getting the latest version.
