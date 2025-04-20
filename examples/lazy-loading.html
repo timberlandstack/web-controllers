@@ -60,6 +60,10 @@
    <div class="section">
         <div data-controller="lazy-img" data-load="visible" class="img-controller">
             <h2><code>data-load="visible"</code> (triggered once when its fully in viewport, then its unobserved)</h2>
+            <button>
+                <x-on :click="removeSection"></x-on>
+                Open the console and click me
+            </button>
             <img 
                 src="https://picsum.photos/200/300" 
                 alt="Random and meaningless picture from lorem picsum"
@@ -71,7 +75,7 @@
     <div data-controller="lazy-img" data-load="visible" data-load-repeat class="img-controller">
             <h2><code>data-load="visible"</code> and <code>data-load-repeat</code> (triggered when its fully in viewport, its observed when entering and exiting)</h2>
             <img 
-                src="https://picsum.photos/200/300" 
+                src="https://picsum.photos/300/200" 
                 alt="Random and meaningless picture from lorem picsum"
                 aria-hidden="true"
                 class="hidden" />
@@ -93,7 +97,21 @@
 
 
     <script type="module">
-        import { XOn, defineController, Emitter, values, useElements, ref } from "../dist/bundled/web-controllers.esm.js";
+        import { XOn, defineController, Emitter, values, useElements, ref, viewport, lifecycle, XInit } from "../dist/bundled/web-controllers.esm.js";
+
+        const enterLaterSection = `
+        <div class="section">
+            <div data-controller="enter-later" data-load="visible">
+                <x-init></x-init>
+
+                <h2>I was generated with a plain <code>replaceWith</code>. Still have lifecycle methods and event listeners because I have a nested custom elements</h2>
+                 <button>
+                    <x-on :click="log"></x-on>
+                    Log to console
+                </button>
+            </div>
+        </div>
+        `
 
         const MainValues = {
             count: {
@@ -124,24 +142,51 @@
         defineController('lazy-img', {
             controller: (ctx) => {
                 console.log('Lazy controller running now! (data-load="visible")')
-        
-                ctx.$inViewport = () => {
+                const { $inViewport, $offViewport } = viewport(ctx)
+                const { $connected, $disconnected } = lifecycle(ctx)
+                
+                $connected(() => {
+                    console.log("running from connected")
+                    return () => console.log("disconnected from cleanup (connected return function)")
+                })
+
+                $disconnected(() => {
+                    console.log("disconnected! (from function) (won't run because we are returning a function from $connected)")
+                })
+
+                $inViewport(() => {
                     const img = ctx.rootElement.querySelector('img')
                     img.classList.remove('hidden')
                     img.classList.add('visible')
                     img.setAttribute('aria-hidden', "false")
-                }
-                ctx.$offViewport = () => {
+                })
+
+                $offViewport(() => {
                     console.log('data-load="visible" is off-viewport')
                     const img = ctx.rootElement.querySelector('img')
                     img.classList.add('hidden')
                     img.classList.remove('visible')
                     img.setAttribute('aria-hidden', "true")
-                }
+                })
+
+                const temp = document.createElement('template')
+                temp.innerHTML = enterLaterSection
+
+                return { removeSection: ({ target }) => { target.closest('.section').replaceWith(temp.content)}}
+            }
+        })
+
+        defineController("enter-later", {
+            controller: (ctx) => {
+                const { $connected } = lifecycle(ctx)
+                $connected(() => {
+                    console.log("Generated with plain JavaScript")
+                })
+                return { log: () => console.log("hey")}
             }
         })
         
-        useElements(XOn)
+        useElements(XOn, XInit)
     </script>
 </body>
 

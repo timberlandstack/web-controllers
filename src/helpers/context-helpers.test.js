@@ -49,7 +49,8 @@ const MainValues = {
 defineController("main", {
   values: MainValues,
   controller: (ctx) => {
-    ctx.decorate({ $mount: mount, values });
+    ctx.$mount = mount(ctx);
+    ctx.values = values(ctx);
   },
 });
 defineController("inner", {

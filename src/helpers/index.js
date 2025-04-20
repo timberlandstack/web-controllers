@@ -7,6 +7,34 @@ export const mount = (context) => {
   };
 };
 
+export const lifecycle = (context) => {
+  context._lifecycleMethods ??= {};
+  const $connected = (callback) => {
+    context._lifecycleMethods.connected = callback;
+  };
+  const $disconnected = (callback) => {
+    context._lifecycleMethods.disconnected = callback;
+  };
+  return {
+    $connected,
+    $disconnected,
+  };
+};
+
+export const viewport = (context) => {
+  context._viewportMethods ??= {};
+  const $inViewport = (callback) => {
+    context._viewportMethods.inViewport = callback;
+  };
+  const $offViewport = (callback) => {
+    context._viewportMethods.offViewport = callback;
+  };
+  return {
+    $inViewport,
+    $offViewport,
+  };
+};
+
 export const getQueryString = (context) => {
   context.nestedController ??=
     context.rootElement.querySelector("[data-controller]");

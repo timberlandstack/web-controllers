@@ -74,9 +74,9 @@ const buildForProd = async () => {
 
 if (argv.at(2) === "dev") {
   const ctx = await esbuild.context({
-    entryPoints: [`${process.cwd()}/src/index.js`],
+    entryPoints: [`${process.cwd()}/src/_barrel.js`],
     bundle: true,
-    outfile: "dist/web-controllers.esm.js",
+    outfile: "dist/bundled/web-controllers.esm.js",
     minify: true,
     format: "esm",
   });
