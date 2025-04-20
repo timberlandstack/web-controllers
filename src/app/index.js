@@ -36,11 +36,6 @@ export const initializeController = (htmlElement) => {
     scope: {},
     rootElement: htmlElement,
     ...appGlobals.helpers,
-    decorate: (helpers) => {
-      for (const helper in helpers) {
-        currentContext[helper] = helpers[helper]?.(currentContext);
-      }
-    },
   };
   for (const helper in appGlobals.helpers) {
     currentContext[helper] = appGlobals.helpers[helper]?.(currentContext);

@@ -27,7 +27,7 @@ document.body.innerHTML = partial;
 
 defineController("app", {
   controller: (ctx) => {
-    ctx.decorate({ $: ref });
+    ctx.$ = ref(ctx);
 
     let count = 0;
     return {
