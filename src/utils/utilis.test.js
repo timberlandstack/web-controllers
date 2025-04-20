@@ -1,4 +1,4 @@
-import { getEventsMap, resolveProperty } from ".";
+import { getEventsMap, mergeNamespace, resolveProperty } from ".";
 
 describe("App utils", () => {
   describe("getEventsMap", () => {
@@ -14,6 +14,31 @@ describe("App utils", () => {
       };
       const eventsMap = getEventsMap(elementWithAttributes.attributes);
       expect(eventsMap).toEqual(referenceEventsMap);
+    });
+  });
+
+  describe("mergeNamespace", () => {
+    it("should return a copy of the context with the given namespace nested as a key", () => {
+      const mockContext = {
+        hello: "world",
+        _namespaces: {
+          input: {
+            hello: "from namespace",
+          },
+        },
+      };
+
+      expect(mergeNamespace(mockContext, "input")).toEqual({
+        hello: "world",
+        input: {
+          hello: "from namespace",
+        },
+        _namespaces: {
+          input: {
+            hello: "from namespace",
+          },
+        },
+      });
     });
   });
 
@@ -40,6 +65,23 @@ describe("App utils", () => {
 
     it("should resolve properties based on a namespace", () => {
       const propertyName = "world.nested";
+      const mockContext = {
+        hello: {
+          world: {
+            nested: true,
+          },
+        },
+      };
+      const value = resolveProperty({
+        propertyName,
+        context: mockContext,
+        namespace: "hello",
+      });
+      expect(value).toBe(true);
+    });
+
+    it("should ignore the namespace if the property starts with 'controller#'", () => {
+      const propertyName = "controller#hello.world.nested";
       const mockContext = {
         hello: {
           world: {

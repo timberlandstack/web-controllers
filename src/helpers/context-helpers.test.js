@@ -1,7 +1,9 @@
-import { App } from "../app";
+import { getQueryString, ref, select, mount, values } from ".";
+import { selectController } from "../../test_mocks/helpers";
+import { defineController, defineGlobals, registry } from "../app";
 
 const partial = /*html*/ `
-<x-controller name="app">
+<div data-controller="main" data-date-value="10/10/1995" data-some-value="hello">
     <!-- this should be selected from app context -->
     <button data-ref="btn">
         Inc
@@ -11,65 +13,98 @@ const partial = /*html*/ `
         <button data-ref="btn">Text</button>
     </div>
 
-    <x-controller name="inner">
+    <div data-controller="inner">
         <span id="count">0</span>
 
         <!-- this should NOT be selected from app context -->
         <button data-ref="btn">sdf</button>
-    </x-controller>
-</x-controller>
+    </div>
+</div>
 `;
-
-const app = new App();
-let appCtx;
-let innerCtx;
-app.controller("app", (ctx) => (appCtx = ctx));
-app.controller("inner", (ctx) => (innerCtx = ctx));
 document.body.innerHTML = partial;
 
-const appRoot = document.querySelector("x-controller[name='app']");
+defineGlobals({
+  helpers: {
+    $getQueryString: getQueryString,
+    $select: select,
+    $: ref,
+  },
+});
 
-describe("context utilities", () => {
-  describe("getQueryString method", () => {
+const MainValues = {
+  count: {
+    transformer: Number,
+    default: 0,
+  },
+  date: {
+    transformer: (val) => new Date(val),
+    default: new Date("1/1/2025"),
+  },
+  some: {
+    transformer: String,
+    default: "no message :(",
+  },
+};
+
+defineController("main", {
+  values: MainValues,
+  controller: (ctx) => {
+    ctx.$mount = mount(ctx);
+    ctx.values = values(ctx);
+  },
+});
+defineController("inner", {
+  controller: () => {},
+});
+
+const mainController = selectController("main");
+const innerController = selectController("inner");
+
+const mainCtx = registry.get(mainController);
+const innerCtx = registry.get(innerController);
+
+describe("Context helpers", () => {
+  describe("getQueryString function", () => {
     it("should return the correct query string", () => {
-      expect(appCtx.$getQueryString("button")).toBe(
-        'button:not( x-controller[name="inner"] * )'
+      expect(mainCtx.$getQueryString("button")).toBe(
+        'button:not( [data-controller="inner"] * )'
       );
 
       expect(innerCtx.$getQueryString("button")).toBe("button");
     });
   });
-  describe("select method", () => {
+
+  describe("select function", () => {
     it("should select elements only inside scope", () => {
-      const foundElements = appCtx.$select("button", { all: true });
+      const foundElements = mainCtx.$select("button", { all: true });
       expect(foundElements.length).toBe(2);
     });
 
     it("should return a single element if only one element matches the selector", () => {
-      const foundElement = appCtx.$select("x-controller[name=inner]");
+      const foundElement = mainCtx.$select("[data-controller=inner]");
       expect(foundElement).toBeInstanceOf(HTMLElement);
     });
   });
 
-  describe("refs proxy", () => {
+  describe("refs function", () => {
     it("should select elements with data-ref attribute inside component scope", () => {
-      const { $ } = appCtx;
+      const { $ } = mainCtx;
       expect($.btn.all().length).toBe(2);
     });
 
     it("should invalidate the query if the rest method is provided second argument", () => {
-      const { $ } = appCtx;
+      const { $ } = mainCtx;
       $.btn.one();
       const newBtn = document.createElement("button");
       newBtn.dataset.ref = "btn";
-      appRoot.appendChild(newBtn);
+      mainController.appendChild(newBtn);
 
       expect($.btn.one()).toBeInstanceOf(HTMLElement);
       expect($.btn.reset().all().length).toBe(3);
     });
 
     it("should automatically invalidate the references if all or one is accessed after the other", () => {
-      const { $ } = appCtx;
+      const { $ } = mainCtx;
       $.btn.one();
 
       expect($.btn.one()).toBeInstanceOf(HTMLElement);
@@ -77,7 +112,7 @@ describe("context utilities", () => {
     });
 
     it("should accept an object with attributes for hydrating ad-hoc", () => {
-      const { $ } = appCtx;
+      const { $ } = mainCtx;
       let count = 0;
 
       $.btn
@@ -116,25 +151,28 @@ describe("context utilities", () => {
     });
   });
 
-  describe("scope method", () => {
-    it("should accept a hydration context", () => {
-      appCtx.$scope({
-        count: 0,
-      });
+  describe("mount function", () => {
+    it("should assign a return value to a namespace", () => {
+      mainCtx.$mount("test", () => ({ count: 0 }));
 
-      expect(appCtx.scope.count).toBe(0);
+      expect(mainCtx.scope._namespaces.test).toBeDefined();
+      expect(mainCtx.scope._namespaces.test.count).toBe(0);
+    });
+  });
+
+  describe("Values from dataset", () => {
+    const mainInstance = registry.get(mainController);
+
+    it("should return the values as provided in the schema", () => {
+      expect(mainInstance.values.some).toBe("hello");
     });
 
-    it("should bind the methods to the scope", () => {
-      appCtx.$scope({
-        count: 0,
-        inc() {
-          this.count++;
-        },
-      });
+    it("should assign the default value if no attributes have been provided", () => {
+      expect(mainInstance.values.count).toBe(0);
+    });
 
-      appCtx.scope.inc();
-      expect(appCtx.scope.count).toBe(1);
+    it("should correctly transform the values", () => {
+      expect(mainInstance.values.date.getFullYear()).toBe(1995);
     });
   });
 });

@@ -4,6 +4,11 @@
   "type": "module",
   "license": "MIT",
   "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./elements": "./src/customElements/index.js",
+    "./helpers": "./src/helpers/index.js"
+  },
   "author": "Álvaro Palma Mancheño",
   "keywords": [
     "web components"
@@ -36,10 +41,14 @@
     "README.md",
     "dist/",
     "!src/__tests__/",
-    "!**/*.test.js"
+    "!**/*.test.js",
+    "!src/_barrel.js"
   ],
   "publishConfig": {
     "access": "public"
   },
-  "packageManager": "pnpm@9.0.6+sha1.648f6014eb363abb36618f2ba59282a9eeb3e879"
+  "packageManager": "pnpm@9.0.6+sha1.648f6014eb363abb36618f2ba59282a9eeb3e879",
+  "dependencies": {
+    "@timberland/emitters": "^0.0.4"
+  }
 }

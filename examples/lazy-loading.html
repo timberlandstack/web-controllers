@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+        html {
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
         .section {
-            height: 110vh;
+            height: 100vh;
             display: flex;
+            justify-content: center;
             align-items: center;
         }
-        x-controller[name="main"] {
+
+        [data-controller] {
             padding: 2rem;
+            justify-content: center;
             align-items: center;
-            display: block;
 
             button,
             h2 {
@@ -23,35 +30,164 @@
                 margin-bottom: 1rem;
             }
         }
+
+        .hidden {
+            opacity: 0;
+            transform: translateX(300px);
+        }
+    
+        img {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all .5s;
+
+        }
+
+        .img-controller {
+            width: fit-content;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
     </style>
 </head>
+
 <body>
     <div class="section">
-        <h1>Scroll to initialize the controller (open the console)</h1>
+        <h1>Scroll to initialize the controllers (open the console)</h1>
     </div>
-    <x-controller name="main" lazy>
-        <h2>App <span data-ref="counter">0</span></h2>
-        <button>
-            <x-on :click="increment"></x-on>
-            Inc
-        </button>
-    </x-controller>
+   <div class="section">
+        <div data-controller="lazy-img" data-load="visible" class="img-controller">
+            <h2><code>data-load="visible"</code> (triggered once when its fully in viewport, then its unobserved)</h2>
+            <button>
+                <x-on :click="removeSection"></x-on>
+                Open the console and click me
+            </button>
+            <img 
+                src="https://picsum.photos/200/300" 
+                alt="Random and meaningless picture from lorem picsum"
+                aria-hidden="true"
+                class="hidden" />
+        </div>
+   </div>
+   <div class="section">
+    <div data-controller="lazy-img" data-load="visible" data-load-repeat class="img-controller">
+            <h2><code>data-load="visible"</code> and <code>data-load-repeat</code> (triggered when its fully in viewport, its observed when entering and exiting)</h2>
+            <img 
+                src="https://picsum.photos/300/200" 
+                alt="Random and meaningless picture from lorem picsum"
+                aria-hidden="true"
+                class="hidden" />
+        </div>
+    </div>
+    <div class="section">
+        <div data-controller="main" data-load="lazy" data-count-value="1">
+            <h2><code>data-load="lazy"</code> (triggered as soon as one pixel is in viewport)</h2>
+
+            <h2>Count in HTML: <code>0</code></h2>
+            <h2>Count set with JavaScript: <code data-ref="counter">0</code></h2>
+
+            <button>
+                <x-on :click="increment"></x-on>
+                Inc
+            </button>
+        </div>
+    </div>
+
 
     <script type="module">
-        import { App, XOnFactory } from "../dist/web-controllers.esm.js"
-        const app = new App()
+        import { XOn, defineController, Emitter, values, useElements, ref, viewport, lifecycle, XInit } from "../dist/web-controllers.esm.js";
 
-        app.controller('main', ({ $ }) => {
-            console.log('Running now!')
-            let count = 0
+        const enterLaterSection = `
+        <div class="section">
+            <div data-controller="enter-later" data-load="visible">
+                <x-init></x-init>
+
+                <h2>I was generated with a plain <code>replaceWith</code>. Still have lifecycle methods and event listeners because I have a nested custom elements</h2>
+                 <button>
+                    <x-on :click="log"></x-on>
+                    Log to console
+                </button>
+            </div>
+        </div>
+        `
+
+        const MainValues = {
+            count: {
+                transformer: (val) => new Emitter(+val),
+                default: new Emitter(22)
+            }
+        }
+        const MainController = (ctx) => {
+            console.log('Lazy controller running now! (data-load="lazy")')
+
+            const { counter } = ref(ctx)
+            const { count } = values(ctx)
+
+            count.subscribe(
+                (val) => counter.one({ textContent: val }),
+                { lazy: false }
+            )
 
             return {
-                increment: () => $.counter.one({ textContent: ++count })
+                increment: () => count.next(count.value + 1)
             }
-            
+        }
+        defineController("main", {
+            values: MainValues,
+            controller: MainController
         })
 
-        app.use(XOnFactory)
+        defineController('lazy-img', {
+            controller: (ctx) => {
+                console.log('Lazy controller running now! (data-load="visible")')
+                const { $inViewport, $offViewport } = viewport(ctx)
+                const { $connected, $disconnected } = lifecycle(ctx)
+                
+                $connected(() => {
+                    console.log("running from connected")
+                    return () => console.log("disconnected from cleanup (connected return function)")
+                })
+
+                $disconnected(() => {
+                    console.log("disconnected! (from function) (won't run because we are returning a function from $connected)")
+                })
+
+                $inViewport(() => {
+                    const img = ctx.rootElement.querySelector('img')
+                    img.classList.remove('hidden')
+                    img.classList.add('visible')
+                    img.setAttribute('aria-hidden', "false")
+                })
+
+                $offViewport(() => {
+                    console.log('data-load="visible" is off-viewport')
+                    const img = ctx.rootElement.querySelector('img')
+                    img.classList.add('hidden')
+                    img.classList.remove('visible')
+                    img.setAttribute('aria-hidden', "true")
+                })
+
+                const temp = document.createElement('template')
+                temp.innerHTML = enterLaterSection
+
+                return { removeSection: ({ target }) => { target.closest('.section').replaceWith(temp.content)}}
+            }
+        })
+
+        defineController("enter-later", {
+            controller: (ctx) => {
+                const { $connected } = lifecycle(ctx)
+                $connected(() => {
+                    console.log("Generated with plain JavaScript")
+                })
+                return { log: () => console.log("hey")}
+            }
+        })
+        
+        useElements(XOn, XInit)
     </script>
 </body>
+
 </html>
