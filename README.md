@@ -43,7 +43,7 @@ The API is almost stable, but I cannot guarantee anything until I (or we, if you
     - [`.one(attributes)`](#oneattributes)
     - [`.all(attributes)`](#allattributes)
     - [`.reset`](#reset)
-  - [Custom Elements (Utility Web Components)](#custom-elements-utility-web-components)
+  - [Custom Elements (`@timberland/web-controllers/elements`)](#custom-elements-timberlandweb-controllerselements)
     - [`x-on`](#x-on)
     - [`x-init`](#x-init)
 
@@ -244,6 +244,11 @@ This is the core of the web controllers. The rest of the exports need this core,
 > [!NOTE]
 > The emitters functions are directly re-exported from `@timberland/emitters`. We are keeping it inside the core for upcoming features of the library and because it didn't feel fair to not provide a reactivity mechanism. Check out their specific [documentation](https://github.com/timberlandstack/emitters). Mind that you don't need to install them, so you can skip the installation section.
 
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
+
 #### `defineController(name, { values, controller })`
 The first argument is a name that will be used to identify the target `data-controller` element. The second one is an object containing two properties: a `values` schema and `controller` callback. The callback will receive a `context` instance and will be executed when the controller is mea. Optionally, it can return an object containing methods that will be added to the [hydration scope](#contextscopehydrationscope).
 The `values` is an object that will be used to map your `data-x-value` on the controller HTML element to usable values in JavaScript. Think of them as "server side props", where you have a fine-grained controller on how to use them. See the [`values`]() section to know more about values.
@@ -323,12 +328,17 @@ defineController("app", {
     }
 })
 ```
+<br>
 
 [Back to Index](#table-of-contents-)
 <br/>
 
 ### Helpers (`@timberland/web-controllers/helpers`)
 Helpers are our proposal for giving you some functionalities for working with your DOM more comfortably without relying on mechanisms like inheritance. They are high order functions that accept the context, setup all needed properties and then return some methods. You can use them directly or add them in the context by yourself.
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
 
 #### `values(context)`
 It returns the mapped values as defined in the values schema used when defining the controller. Under the hood, it will read all your given values and map them to attributes with the format `data-[name]-value` in your controller HTML element.
@@ -357,6 +367,10 @@ defineController("app", {
     }
 })
 ```
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
 
 #### `mount(context)`
 It returns a function that helps to assign a namespace name to an HTML element. Instead of accessing nested values via dot notation, you can assign a namespace for other elements inside your controller to grab the methods from. For instance:
@@ -395,6 +409,11 @@ defineController("app", {
 
 > [!NOTE]
 > It will add the `_namespaces` property to `context.scope`.
+
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
 
 #### `ref(context)`
 It returns a [`Proxy`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) that will help you dynamically select any element with a matching `data-ref` attribute nested inside the controller element. It will return a `Ref` instance
@@ -543,6 +562,11 @@ defineController("app", {
 > [!NOTE]
 > For functions to work, you will need to use an `x-init` element targeting the controller HTML element. Otherwise, we have no way of tracking when an element is disconnected from the DOM.
 
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
+
 #### `viewport(context)`
 It returns two functions named `$inViewport` and `$offViewport`. They are only useful if combining `data-load` and `data-load-repeat` attributes in your controller. The callbacks provided will be called every time the element enters or exits the viewport, respectively:
 
@@ -578,6 +602,11 @@ defineController('apply-transition', {
 ```
 > [!NOTE]
 > It will add the `_viewportMethods` property to the context.
+
+<br/>
+
+[Back to Index](#table-of-contents-)
+<br/>
 
 ### `new Ref`
 As stated previously, the `ref` helper will return an instance of the `Ref` class. You should not care about how they are instantiated, since the `$` proxy of the `Context` takes care of it for you. They come with the following methods:
@@ -668,7 +697,7 @@ It would be the equivalent of passing `invalidate: true` to the `$select` helper
 [Back to Index](#table-of-contents-)
 <br/>
 
-### Custom Elements (Utility Web Components)
+### Custom Elements (`@timberland/web-controllers/elements`)
 For the time being, we just provide two built-in custom elements. As stated in the previous sections, they aim at being a more declarative alternative to attributes. 
 
 They both work in the same way: given a set of special attributes, they will look up for their values in their closest controller's hydration scope. There is no JavaScript evaluation whatsoever. If you need to perform any conditional action based on a value (when you would typically pass down as an argument for the event handler), the best approach would be to use a dataset on the target element.
@@ -682,7 +711,7 @@ Its mission is to attach event listeners to its target. If not specified, the ta
 You can add as many event names as you want as long as they are provided in the `:<event-name>` format. Every attribute starting with a colon (`:`) will be treated as an event name. It can therefore be used for custom events as well. If you want several handlers for the same event, separate them with commas.
 
 ```html
-<x-controller name="app">
+<div data-controller="app">
     <!-- It targets the app controller -->
     <x-on :click="handleClick, handleDelegatedClick" :mouseover="logCursorPosition">
 
@@ -695,7 +724,7 @@ You can add as many event names as you want as long as they are provided in the 
             <input type="text" name="name_input" data-ref="nameInput"/>
         </label>
     </form>
-</x-controller>
+</div>
 ```
 ```javascript
 defineController("app", {
@@ -733,7 +762,7 @@ The only two attributes are `:connected` and `:disconnected`. As for the `x-on` 
             <x-init :connected="pConnected"></x-init>
         </p>
     </template>
-</x-controller>
+</div>
 
 ```
 ```javascript
