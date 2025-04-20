@@ -2,10 +2,14 @@ export const controllers = {};
 export const registry = new WeakMap();
 export const elementsQueue = new WeakMap();
 export let observer = null;
-const globalHelpers = [];
+const appGlobals = {
+  helpers: {},
+};
 
-export const defineGlobals = ({ helpers }) => {
-  globalHelpers.push(...helpers);
+export const defineGlobals = (globals) => {
+  for (const global in globals) {
+    appGlobals[global] = globals[global];
+  }
 };
 
 export const observers = {
@@ -30,17 +34,17 @@ export const initializeController = (htmlElement) => {
   const currentContext = {
     valuesSchema,
     scope: {},
-    nestedController: htmlElement.querySelector("[data-controller]"),
     rootElement: htmlElement,
-    use: (...helpers) => {
-      helpers.forEach(
-        (helper) =>
-          (currentContext[helper.alias ?? helper.fn.name] ??=
-            helper.fn(currentContext))
-      );
+    ...appGlobals.helpers,
+    decorate: (helpers) => {
+      for (const helper in helpers) {
+        currentContext[helper] = helpers[helper]?.(currentContext);
+      }
     },
   };
-  if (globalHelpers.length) currentContext.use(...globalHelpers);
+  for (const helper in appGlobals.helpers) {
+    currentContext[helper] = appGlobals.helpers[helper]?.(currentContext);
+  }
 
   // Just in case we want to manipulate the scope from the controller
   Object.assign(currentContext.scope, callback(currentContext) ?? {});

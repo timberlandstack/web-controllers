@@ -24,11 +24,11 @@ const partial = /*html*/ `
 document.body.innerHTML = partial;
 
 defineGlobals({
-  helpers: [
-    { fn: getQueryString, alias: "$getQueryString" },
-    { fn: select, alias: "$select" },
-    { fn: ref, alias: "$" },
-  ],
+  helpers: {
+    $getQueryString: getQueryString,
+    $select: select,
+    $: ref,
+  },
 });
 
 const MainValues = {
@@ -49,7 +49,7 @@ const MainValues = {
 defineController("main", {
   values: MainValues,
   controller: (ctx) => {
-    ctx.use({ fn: mount, alias: "$mount" }, { fn: values });
+    ctx.decorate({ $mount: mount, values });
   },
 });
 defineController("inner", {

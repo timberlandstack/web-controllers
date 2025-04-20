@@ -8,6 +8,9 @@ export const mount = (context) => {
 };
 
 export const getQueryString = (context) => {
+  context.nestedController ??=
+    context.rootElement.querySelector("[data-controller]");
+
   return (selector) => {
     let queryString = selector;
     if (context.nestedController) {
