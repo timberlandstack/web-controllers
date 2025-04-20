@@ -43,7 +43,7 @@ The API is almost stable, but I cannot guarantee anything until I (or we, if you
     - [`.one(attributes)`](#oneattributes)
     - [`.all(attributes)`](#allattributes)
     - [`.reset`](#reset)
-  - [Custom Elements (Utility Web Components)](#custom-elements-utility-web-components)
+  - [Custom Elements (`@timberland/web-controllers/elements`)](#custom-elements-timberlandweb-controllerselements)
     - [`x-on`](#x-on)
     - [`x-init`](#x-init)
 
@@ -68,20 +68,15 @@ Export paths are:
 ```html
 <!-- ESM -->
 <script type="module">
-    import { defineController } from "https://unpkg.com/@timberland/web-controllers/dist/bundled/web-controllers.esm.js"
+    import { defineController } from "https://unpkg.com/@timberland/web-controllers/bundled/web-controllers.esm.js"
 </script>
 
 <!-- IIFE -->
-<script src="https://unpkg.com/@timberland/web-controllers/dist/bundled/web-controllers.iife.js"></script>
+<script src="https://unpkg.com/@timberland/web-controllers/dist/web-controllers.iife.js"></script>
 <script>
     // Stored under the WebControllers name so we don't pollute the global scope
-    const { Application } = window.WebControllers 
+    const { defineController } = window.WebControllers 
 </script>
-
-We recommend you use the bundled versions for ease of use. However, if you prefer, you can also find the same equivalents as in the package manager version:
-- [cdn_url/package]/dist/index.[format].js (for the core)
-- [cdn_url/package]/dist/helpers.[format].js (for the helpers)
-- [cdn_url/package]/dist/customElements.[format].js (for the custom elements)
 ```
 > [!CAUTION] 
 > These examples should be used for development only. If you plan to use the CDN for production, pin a specific version. For instance: `https://unpkg.com/@timberland/web-controllers@0.0.10/dist/bundled/web-controllers.esm.js`. Check the releases section for getting the latest version.
@@ -697,7 +692,7 @@ It would be the equivalent of passing `invalidate: true` to the `$select` helper
 [Back to Index](#table-of-contents-)
 <br/>
 
-### Custom Elements (Utility Web Components)
+### Custom Elements (`@timberland/web-controllers/elements`)
 For the time being, we just provide two built-in custom elements. As stated in the previous sections, they aim at being a more declarative alternative to attributes. 
 
 They both work in the same way: given a set of special attributes, they will look up for their values in their closest controller's hydration scope. There is no JavaScript evaluation whatsoever. If you need to perform any conditional action based on a value (when you would typically pass down as an argument for the event handler), the best approach would be to use a dataset on the target element.
