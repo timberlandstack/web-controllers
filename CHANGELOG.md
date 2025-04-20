@@ -1,5 +1,11 @@
 # @timberland/web-controllers
 
+## 0.0.10
+
+### Patch Changes
+
+- b3a96c6: Redesign api
+
 ## 0.0.9
 
 ### Patch Changes
