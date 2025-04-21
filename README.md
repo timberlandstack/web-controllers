@@ -390,7 +390,7 @@ It returns a function that helps to assign a namespace name to an HTML element. 
 const Button = ({ $ }) => {
     let count;
     return {
-        increment: $.counter.one({ textContent: ++count})
+        increment: () => $.counter.one({ textContent: ++count})
     }
 }
 
