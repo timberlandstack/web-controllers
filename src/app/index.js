@@ -24,7 +24,17 @@ export const initializeController = (htmlElement) => {
     htmlElement.hasAttribute("data-load") &&
     !elementsQueue.has(htmlElement)
   ) {
-    observe(htmlElement);
+    if (htmlElement.dataset.load.startsWith("on:")) {
+      htmlElement.addEventListener(
+        htmlElement.dataset.load.slice(3),
+        () => {
+          initializeController(htmlElement);
+        },
+        { once: true }
+      );
+    } else {
+      observe(htmlElement);
+    }
     elementsQueue.set(htmlElement, new Set());
     return;
   }
