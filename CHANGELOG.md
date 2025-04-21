@@ -1,5 +1,12 @@
 # @timberland/web-controllers
 
+## 0.0.11
+
+### Patch Changes
+
+- 4ae6ce0: In addition to the viewport, we can now specify if a controller should be loaded with a custom event
+- 7bb95d6: Redesign api
+
 ## 0.0.10
 
 ### Patch Changes
