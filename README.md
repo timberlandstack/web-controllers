@@ -68,7 +68,7 @@ Export paths are:
 ```html
 <!-- ESM -->
 <script type="module">
-    import { defineController } from "https://unpkg.com/@timberland/web-controllers/bundled/web-controllers.esm.js"
+    import { defineController } from "https://unpkg.com/@timberland/web-controllers/web-controllers.esm.js"
 </script>
 
 <!-- IIFE -->
@@ -142,8 +142,8 @@ They are high-order functions that read and manipulate the `context` object, ret
 We mostly like to stick to web standards, so all "special" attributes on existing HTML elements are mere dataset attributes. The only two ones are:
 - `data-ref`: Special selector for selecting `Ref`s.
 - `data-namespace`: Used to access a mounted namespace when referencing the hydration context in the HTML.
-- `data-load`: It specifies how we should initialize the controllers. If not present, the controllers will be initialized as soon as possible. It accepts either `lazy` or `visible`.
-
+- `data-load`: It specifies how we should initialize the controllers. If not present, the controllers will be initialized as soon as possible. It accepts either `lazy` or `visible`. Additionally, you can set the value to a string starting with `on:` if you want it to be initialized when any of its children emit the corresponding event.
+  
 The approach is a little bit different, however, on the built-in web components. More on that in their [specific section](#custom-elements).
 
 ### Utility Web Components
@@ -214,7 +214,7 @@ In this Alpine example, there are a few things going on:
             I'm a message
         </p>
     </template>
- </div>
+</div>
 ```
 In this case:
 1. We don't know how, why and at which point of the execution of the app this button with an "onclick" handler arrived. But we don't care. The `x-on` custom element takes care of attaching the corresponding event listeners and initializing the closest controller if it hasn't been present in the DOM in its moment of definition.
@@ -375,7 +375,7 @@ It returns a function that helps to assign a namespace name to an HTML element. 
     <h1>Count is: <span data-ref="counter"></span></h1>
 
     <!-- It would be possible via dot notation -->
-    <!-- <button namespace="button">
+    <!-- <button>
         <x-on :click="_namespaces.button.increment"></x-on>
     </button> -->
     <button data-namespace="button">
@@ -566,13 +566,12 @@ defineController("app", {
 It returns two functions named `$inViewport` and `$offViewport`. They are only useful if combining `data-load` and `data-load-repeat` attributes in your controller. The callbacks provided will be called every time the element enters or exits the viewport, respectively:
 
 ```html
- <div data-controller="apply-transition" data-load="visible" data-load-repeat>
-        <img 
-            src="https://picsum.photos/300/200" 
-            alt="Random and meaningless picture from lorem picsum"
-            aria-hidden="true"
-            class="hidden" />
-    </div>
+<div data-controller="apply-transition" data-load="visible" data-load-repeat>
+    <img 
+        src="https://picsum.photos/300/200" 
+        alt="Random and meaningless picture from lorem picsum"
+        aria-hidden="true"
+        class="hidden" />
 </div>
 ```
 ```javascript
@@ -716,7 +715,7 @@ You can add as many event names as you want as long as they are provided in the 
         <label>Enter your name:
             <!-- It targets the input element-->
             <x-on target="nameInput" :input="validateInput" :focusout="validateInput">
-            <input type="text" name="name_input" data-ref="nameInput"/>
+            <input data-ref="nameInput" type="text" name="name_input" />
         </label>
     </form>
 </div>

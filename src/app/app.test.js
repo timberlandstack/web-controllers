@@ -12,6 +12,7 @@ const partial = /*html*/ `
     <x-test></x-test>
 </div>
 <div data-controller="lazy" data-load="visible"></div>
+<div data-controller="event" data-load="on:element-connected"></div>
 `;
 document.body.innerHTML = partial;
 
@@ -20,6 +21,9 @@ class TestCustomElement extends HTMLElement {
   constructor() {
     super();
     this.initialized = true;
+  }
+  connectedCallback() {
+    this.dispatchEvent(new CustomEvent("element-connected", { bubbles: true }));
   }
 }
 
@@ -31,17 +35,22 @@ defineController("lazy", {
   controller: () => {},
 });
 
+defineController("event", {
+  controller: () => {},
+});
+
 useElements(TestCustomElement);
 
 const mainController = selectController("main");
 const lazyController = selectController("lazy");
+const eventController = selectController("event");
 
 describe("App init method", () => {
   it("should initialize the registered controllers", () => {
     expect(registry.get(mainController)).toBeDefined();
   });
 
-  it("should not initialize it if data-load is set to visible", () => {
+  it("should not initialize it if data-load is set", () => {
     expect(registry.get(lazyController)).toBeUndefined();
   });
 
@@ -65,5 +74,11 @@ describe("App init method", () => {
   it("should register custom elements", () => {
     expect(document.querySelector("x-test").initialized).toBe(true);
     expect(customElements.get("x-test")).toBeDefined();
+  });
+
+  it('should initialize the controller with an event when the data-load value starts with "on:"', () => {
+    expect(registry.get(eventController)).toBeUndefined();
+    eventController.appendChild(document.createElement("x-test"));
+    expect(registry.get(eventController)).toBeDefined();
   });
 });
