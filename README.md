@@ -1,5 +1,5 @@
-# Timberland - Web Controllers <!-- omit in toc --> 
-The `web-controllers` package aims at being a more lightweight and modular approach to alternatives like [Alpine](https://github.com/alpinejs/alpine) and [Stimulus](https://github.com/hotwired/stimulus), while leveraging a unique use for web components. Heavily inspired by [h3](https://h3.unjs.io/).
+# Mist <!-- omit in toc --> 
+Mist aims at being a more lightweight and modular approach to alternatives like [Alpine](https://github.com/alpinejs/alpine) and [Stimulus](https://github.com/hotwired/stimulus), while leveraging a unique use for web components. Heavily inspired by [h3](https://h3.unjs.io/).
 
 Some key features:
 - Turn any piece of HTML into a controller to easily manipulate it and avoid extra querySelectors.

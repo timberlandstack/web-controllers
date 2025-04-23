@@ -15,5 +15,5 @@ await esbuild.build({
   outfile: "dist/web-controllers.iife.js",
   minify: true,
   format: "iife",
-  globalName: "WebControllers",
+  globalName: "Mist",
 });

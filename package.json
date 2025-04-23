@@ -1,6 +1,6 @@
 {
-  "name": "@timberland/web-controllers",
-  "version": "0.0.11",
+  "name": "@timberstack/mist",
+  "version": "0.0.1",
   "type": "module",
   "license": "MIT",
   "main": "src/index.js",
@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/timberlandstack/web-controllers.git"
+    "url": "git+https://github.com/timberstack/mist.git"
   },
   "description": "Lightweight alternative to jQuery and stimulus",
   "scripts": {
